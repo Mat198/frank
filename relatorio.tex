@@ -77,27 +77,23 @@
 
 \section{Objetivos}
 
-\iffalse Alteração Matheus
-Este relatório apresenta as atividades realizadas no estudo de modelagem e cinemática de robôs, abordando métodos clássicos e modernos aplicados à manipulação robótica e ao uso de técnicas de aprendizagem de máquina. De forma mais específica, os objetivos principais foram:
-\fi
-
 Este relatório descreve as atividades realizadas na disciplina Manipulação Robótica com o robô FRANK. Os objetivos principais foram:
 
 \begin{itemize}
-  \item Descrever robôs utilizando Denavit–Hartenberg e teoria helicoidal.
-  \item Estudar e aplicar cinemática direta e inversa.
+  \item Descrever o manipulador utilizando a notação de Denavit–Hartenberg e teoria helicoidal.
+  \item Determinar e aplicar a cinemática direta e inversa.
   \item Aplicar conceitos de cinemática a tarefas de manipulação (pick and place).
   \item Explorar métodos modernos e técnicas de aprendizagem de máquina aplicadas à manipulação robótica.
 \end{itemize}
 
 \section{Introdução}
 
-\subsection{Método de
+\subsection{Notação de
 Denavit-Hartenberg}
 
-O método de Denavit--Hartenberg (DH) é uma sistematização amplamente utilizada para descrever a geometria de manipuladores robóticos por meio de uma sequência ordenada de transformações homogêneas. Seu objetivo é padronizar a forma de posicionar e orientar sistemas de coordenadas ao longo da cadeia cinemática, permitindo a formulação clara e repetitiva das matrizes de transformação entre elos consecutivos. A partir dessa convenção, a obtenção da cinemática direta torna-se estruturada, reduzindo ambiguidades na modelagem e facilitando a implementação em algoritmos computacionais.
+A notação de Denavit--Hartenberg (DH) é uma convenção amplamente utilizada para descrever a geometria de manipuladores robóticos com apenas quatro parâmetros por junta. Seu objetivo é padronizar a forma de posicionar e orientar sistemas de coordenadas ao longo da cadeia cinemática com um número mínimo de parâmetros. A partir dessa convenção, a obtenção da cinemática direta torna-se simples e permite a compatibilidade com algoritmos computacionais já implementados.
 
-O procedimento consiste em associar um referencial a cada junta e definir quatro parâmetros que descrevem de maneira mínima a transformação entre dois elos consecutivos. Esses parâmetros, conhecidos como $a_i$, $\alpha_i$, $d_i$ e $\theta_i$, caracterizam as operações de rotação e translação necessárias para ir do frame $i$ ao frame $i+1$. O método estabelece regras específicas para posicionar os eixos $z_i$ e $x_i$, garantindo consistência ao longo de toda a cadeia.
+O procedimento consiste em associar um referencial a cada junta e definir quatro parâmetros que descrevem de maneira mínima a transformação entre dois elos consecutivos. Esses parâmetros, conhecidos como $a_i$, $\alpha_i$, $d_i$ e $\theta_i$, caracterizam as operações de rotação e translação necessárias para ir do frame $i$ ao frame $i+1$. O método estabelece regras específicas para posicionar os eixos $z_i$ e $x_i$.
 
 A definição dos parâmetros segue os passos a seguir:
 
@@ -116,11 +112,15 @@ Uma vez definidos os referenciais, os quatro parâmetros DH são estabelecidos:
     \item $\theta_i$: ângulo entre $x_i$ e $x_{i+1}$ ao redor de $z_i$; variável em juntas revolutas.
 \end{itemize}
 
-Portanto, a convenção DH proporciona um procedimento uniforme para construir a cinemática direta do manipulador: multiplica-se sequencialmente as transformações ${}^{0}T_1$, ${}^{1}T_2$, \ldots, ${}^{n-1}T_n$ até obter a matriz final ${}^{0}T_n$ que relaciona a base ao end-effector.
+Dados esses parâmetros, a matriz de transformação entreo elo i e i+1 é definida por:
+// TODO: Adicionar matriz da transformação entre os elos
+
+
+Multiplicando-se sequencialmente as transformações ${}^{0}T_1$, ${}^{1}T_2$, \ldots, ${}^{n-1}T_n$ é possível obter a transformação completa ${}^{0}T_n$ que relaciona a base ao último elo.
 
 \subsection{Cinemática Direta}
 
-A cinemática direta trata do problema de determinar a posição e a orientação da extremidade operacional (end-effector) de um manipulador robótico a partir das variáveis das juntas. Esse problema é fundamental porque constitui a base de qualquer tarefa de manipulação: antes de planejar trajetórias, controlar forças ou interagir com objetos, é necessário compreender como o movimento interno do robô se traduz em movimento externo do end-effector. Além disso, a cinemática direta fornece a representação geométrica que pode ser usada pela cinemática inversa, Jacobianos e pela modelagem dinâmica.
+A cinemática direta trata do problema de determinar a posição e a orientação da extremidade operacional (end-effector) ou punho de um manipulador robótico a partir da posição das juntas.
 
 Os manipuladores robóticos são compostos por elos conectados por juntas, formando uma cadeia cinemática aberta. Para descrever matematicamente essa cadeia, utiliza-se uma sequência de sistemas de coordenadas ligados a cada elo, relacionados uns aos outros por transformações homogêneas. Um método amplamente utilizado para essa parametrização é o modelo de Denavit--Hartenberg (DH), como mostrado anteriormente. A transformação homogênea de cada elo para o próximo pode ser escrita genericamente como
 \[
@@ -159,7 +159,7 @@ podemos corrigi-lo iterativamente utilizando a atualização
 \[
 \mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, e,
 \]
-onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja em uma singularidade. 
+onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja próximo de uma singularidade. 
 
 Apesar de eficaz, o método numérico tem limitações. Próximo a singularidades, a Jacobiana se torna mal condicionada, levando a movimentos exagerados ou instáveis nas juntas. Além disso, o método numérico necessita de uma boa inicialização, caso contrário pode convergir para uma solução indesejada ou ficar preso em mínimos locais.
 
