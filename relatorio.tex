@@ -1,0 +1,720 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{caption}
+\usepackage{pgfplots}
+\usepackage{ulem}
+\usepackage{circuitikz}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\renewcommand{\lstlistingname}{Código}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{orange},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true
+}
+
+\pgfplotsset{width=10cm, compat=1.18}
+\geometry{
+	paper=a4paper, 
+	inner=3cm,
+	outer=3cm,
+	bindingoffset=.5cm, 
+	top=2cm, 
+	bottom=2cm, 
+}
+\graphicspath{ {./imagens/} }
+\newcommand{\source}[1]{\caption*{Fonte: {#1}} }
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \Large
+        Universidade de São Paulo
+        \vspace*{1cm}
+
+        \includegraphics[scale=0.75]{imagens/logo.png} \\
+        \vspace{1cm}
+        
+        \Huge
+        \textbf{Manipulação Robótica} \\
+
+        \vspace{1cm}
+        \Large
+        Relatório de Atividades
+        
+        \vspace{4cm}
+        \Large
+        
+    \end{center}
+    
+    \begin{flushright}
+        \Large
+        \textbf{Alunos}\\
+        \large
+            Lucas F. R. Mazzetto — 17013253 \\
+            Matheus S. Soares — 9773322 \\
+    \end{flushright}
+    
+    \vspace*{\fill}
+    \centering \large São Carlos \\ 2025
+    
+\end{titlepage}
+
+\section{Objetivos}
+
+\iffalse Alteração Matheus
+Este relatório apresenta as atividades realizadas no estudo de modelagem e cinemática de robôs, abordando métodos clássicos e modernos aplicados à manipulação robótica e ao uso de técnicas de aprendizagem de máquina. De forma mais específica, os objetivos principais foram:
+\fi
+
+Este relatório descreve as atividades realizadas na disciplina Manipulação Robótica com o robô FRANK. Os objetivos principais foram:
+
+\begin{itemize}
+  \item Descrever robôs utilizando Denavit–Hartenberg e teoria helicoidal.
+  \item Estudar e aplicar cinemática direta e inversa.
+  \item Aplicar conceitos de cinemática a tarefas de manipulação (pick and place).
+  \item Explorar métodos modernos e técnicas de aprendizagem de máquina aplicadas à manipulação robótica.
+\end{itemize}
+
+\section{Introdução}
+
+\subsection{Método de
+Denavit-Hartenberg}
+
+O método de Denavit--Hartenberg (DH) é uma sistematização amplamente utilizada para descrever a geometria de manipuladores robóticos por meio de uma sequência ordenada de transformações homogêneas. Seu objetivo é padronizar a forma de posicionar e orientar sistemas de coordenadas ao longo da cadeia cinemática, permitindo a formulação clara e repetitiva das matrizes de transformação entre elos consecutivos. A partir dessa convenção, a obtenção da cinemática direta torna-se estruturada, reduzindo ambiguidades na modelagem e facilitando a implementação em algoritmos computacionais.
+
+O procedimento consiste em associar um referencial a cada junta e definir quatro parâmetros que descrevem de maneira mínima a transformação entre dois elos consecutivos. Esses parâmetros, conhecidos como $a_i$, $\alpha_i$, $d_i$ e $\theta_i$, caracterizam as operações de rotação e translação necessárias para ir do frame $i$ ao frame $i+1$. O método estabelece regras específicas para posicionar os eixos $z_i$ e $x_i$, garantindo consistência ao longo de toda a cadeia.
+
+A definição dos parâmetros segue os passos a seguir:
+
+\begin{itemize}
+    \item O eixo $z_i$ é sempre escolhido como o eixo da junta $i$, seja ela revoluta ou prismática.
+    \item O eixo $x_i$ é definido ao longo da interseção ou perpendicular comum entre $z_i$ e $z_{i+1}$, apontando do elo $i$ para o elo $i+1$.
+    \item O eixo $y_i$ é determinado pela regra da mão direita, completando o sistema coordenado.
+\end{itemize}
+
+Uma vez definidos os referenciais, os quatro parâmetros DH são estabelecidos:
+
+\begin{itemize}
+    \item $a_i$: distância entre $z_i$ e $z_{i+1}$ medida ao longo de $x_i$; representa o comprimento do elo.
+    \item $\alpha_i$: ângulo entre $z_i$ e $z_{i+1}$ medido ao redor de $x_i$; representa a torção entre os eixos.
+    \item $d_i$: distância entre a origem do frame $i$ e a interseção com $x_i$, medida ao longo de $z_i$; variável em juntas prismáticas.
+    \item $\theta_i$: ângulo entre $x_i$ e $x_{i+1}$ ao redor de $z_i$; variável em juntas revolutas.
+\end{itemize}
+
+Portanto, a convenção DH proporciona um procedimento uniforme para construir a cinemática direta do manipulador: multiplica-se sequencialmente as transformações ${}^{0}T_1$, ${}^{1}T_2$, \ldots, ${}^{n-1}T_n$ até obter a matriz final ${}^{0}T_n$ que relaciona a base ao end-effector.
+
+\subsection{Cinemática Direta}
+
+A cinemática direta trata do problema de determinar a posição e a orientação da extremidade operacional (end-effector) de um manipulador robótico a partir das variáveis das juntas. Esse problema é fundamental porque constitui a base de qualquer tarefa de manipulação: antes de planejar trajetórias, controlar forças ou interagir com objetos, é necessário compreender como o movimento interno do robô se traduz em movimento externo do end-effector. Além disso, a cinemática direta fornece a representação geométrica que pode ser usada pela cinemática inversa, Jacobianos e pela modelagem dinâmica.
+
+Os manipuladores robóticos são compostos por elos conectados por juntas, formando uma cadeia cinemática aberta. Para descrever matematicamente essa cadeia, utiliza-se uma sequência de sistemas de coordenadas ligados a cada elo, relacionados uns aos outros por transformações homogêneas. Um método amplamente utilizado para essa parametrização é o modelo de Denavit--Hartenberg (DH), como mostrado anteriormente. A transformação homogênea de cada elo para o próximo pode ser escrita genericamente como
+\[
+T_i(q_i) =
+\begin{bmatrix}
+R_i(q_i) & p_i(q_i) \\
+0 & 1
+\end{bmatrix},
+\]
+onde $R_i$ representa a rotação associada à junta e à orientação relativa entre elos, enquanto $p_i$ representa a translação decorrente do comprimento e deslocamento do elo. 
+
+A composição dessas transformações sucessivas leva à matriz de transformação total entre a base do robô e o end-effector,
+\[
+T(\mathbf{q}) = T_1(q_1)\, T_2(q_2)\, \cdots\, T_n(q_n),
+\]
+que encapsula toda a contribuição geométrica das juntas. A partir dessa matriz final, extrai-se diretamente a posição do efetuador, podendo ser representadas em diversos formatos, como ângulos de Euler ou quaternions. 
+
+Em robôs com muitos graus de liberdade, a cinemática direta também permite avaliar propriedades importantes, como alcance, zonas de operação e possíveis colisões entre elos. Ainda, é um componente essencial na construção de modelos cinemáticos diferenciáveis necessários para o cálculo da Jacobiana, que por sua vez será usada na cinemática inversa e no controle baseado em velocidade. 
+
+A cinemática direta fornece o mapeamento fundamental entre o espaço interno do robô (variáveis de junta) e o espaço externo de atuação (pose do end-effector). Apesar de sua forma relativamente simples, ela estabelece toda a estrutura geométrica necessária para resolver problemas posteriores de planejamento, controle e interação com o ambiente.
+
+
+\subsection{Cinemática Inversa}
+
+A cinemática inversa aborda o problema complementar ao da cinemática direta: dada uma pose desejada para o end-effector, determinar quais valores de junta o manipulador deve assumir para alcançá-la. Esse problema é central em qualquer tarefa de manipulação, pois normalmente os comandos humanos ou de alto nível são especificados no espaço cartesiano. Transformar essas metas espaciais em ângulos ou deslocamentos de junta é, portanto, essencial para a execução prática do movimento. Contudo, diferentemente da cinemática direta, a cinemática inversa pode apresentar múltiplas soluções, nenhuma solução ou soluções não triviais, especialmente em robôs com redundâncias ou com restrições geométricas. 
+
+Para manipuladores simples, especialmente aqueles com poucos graus de liberdade ou estrutura geométrica particular (como braços planares), é possível derivar soluções analíticas fechadas. Porém, para manipuladores industriais modernos, robôs humanoides ou braços redundantes, soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear entre juntas e orientação do end-effector.
+
+Por essa razão, métodos numéricos, como os métodos baseados em Jacobianos são amplamente utilizados. A ideia fundamental é aproximar o comportamento local do manipulador por meio da Jacobiana, que relaciona pequenas variações de posição e orientação do end-effector com pequenas variações nas juntas. 
+
+Dado um erro cartesiano atual
+\[
+e = x_d - f(\mathbf{q}),
+\]
+podemos corrigi-lo iterativamente utilizando a atualização
+\[
+\mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, e,
+\]
+onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja em uma singularidade. 
+
+Apesar de eficaz, o método numérico tem limitações. Próximo a singularidades, a Jacobiana se torna mal condicionada, levando a movimentos exagerados ou instáveis nas juntas. Além disso, o método numérico necessita de uma boa inicialização, caso contrário pode convergir para uma solução indesejada ou ficar preso em mínimos locais.
+
+Portanto, a cinemática inversa é um dos problemas centrais da manipulação robótica, pois traduz objetivos no espaço cartesiano para comandos executáveis pelo robô. Embora soluções analíticas sejam elegantes e eficientes quando disponíveis, a complexidade dos manipuladores modernos normalmente requer o uso de métodos numéricos, como os baseados em Jacobianos.
+
+\subsection{Jacobiana, Cinemática Diferencial e Controle}
+
+A Jacobiana é uma ferramenta central no estudo e controle de manipuladores robóticos, pois estabelece a relação diferencial entre o movimento das juntas e o movimento cartesiano do end-effector. Enquanto a cinemática direta determina a pose a partir das configurações articulares, a Jacobiana descreve como variações infinitesimais nas juntas produzem velocidades lineares e angulares no efetuador. Essa relação é fundamental para tarefas como cinemática inversa diferencial, controle de velocidade, controle de força e análise de singularidades, traduzindo a estrutura geométrica e as capacidades de movimento do manipulador.
+
+A relação fundamental é dada por:
+
+\[
+\dot{\mathbf{x}} = J(\mathbf{q}) \, \dot{\mathbf{q}},
+\]
+
+Onde $\dot{\mathbf{x}}$ representa a velocidade cartesiana, $\dot{\mathbf{q}}$ o vetor de velocidades articulares e $J(\mathbf{q})$ a Jacobiana avaliada na configuração atual. Cada coluna de $J$ indica como a velocidade de uma junta influencia diretamente o movimento do end-effector. A Jacobiana pode ser particionada como:
+\[
+J =
+\begin{bmatrix}
+J_v \\
+J_\omega
+\end{bmatrix},
+\]
+Onde $J_v$ contém as contribuições de velocidade linear e $J_\omega$ as contribuições de velocidade angular.
+
+Assim, para juntas de revolução, temos:
+
+\[
+J_v^i = z_{i-1} \times (p_e - p_{i-1}), \qquad 
+J_\omega^i = z_{i-1},
+\]
+
+Enquanto para juntas prismáticas vale:
+
+\[
+J_v^i = z_{i-1}, \qquad 
+J_\omega^i = 0.
+\]
+
+\subsubsection{Manipuladores de 6 Graus de Liberdade}
+Manipuladores com seis juntas permitem controlar completamente a posição e a orientação do end-effector em um espaço tridimensional, resultando em um vetor de velocidades cartesiano de seis dimensões:
+
+\[
+\dot{x} =
+\begin{bmatrix}
+\dot{p} \\
+\omega
+\end{bmatrix},
+\]
+
+Nesse caso, a Jacobiana tem dimensão $6 \times 6$ e, quando longe de singularidades, é invertível. Isso permite que o robô explore totalmente seu espaço de trabalho tanto em termos de movimento translacional quanto rotacional. Para robôs industriais com todas as juntas de revolução, cada coluna da Jacobiana segue exatamente o padrão apresentado anteriormente. Devido à completude de graus de liberdade, a cinemática inversa diferencial é bem definida e o manipulador pode rastrear trajetórias arbitrárias de pose (posição + orientação), desde que estas estejam dentro do espaço alcançável do robô.
+
+\subsubsection{Manipuladores com 5 Juntas de Revolução}
+
+Manipuladores com cinco juntas de revolução apresentam limitações estruturais, pois não possuem os seis graus necessários para especificar independentemente posição e orientação. Isso se reflete na Jacobiana:
+
+\[
+J(\mathbf{q}) \in \mathbb{R}^{6 \times 5},
+\]
+
+Nesse caso, ela mapeia velocidades articulares para um espaço cartesiano de dimensão maior do que o número de graus de liberdade disponíveis. As colunas continuam sendo dadas por:
+
+\[
+J_v^i = z_i \times (p_e - p_i), \qquad 
+J_\omega^i = z_i,
+\]
+
+Mas a matriz nunca pode alcançar posto igual a seis. Consequentemente, o manipulador só consegue gerar movimentos em cinco direções independentes, restringindo combinações de posição e orientação possíveis. A cinemática inversa diferencial só consegue satisfazer as componentes realizáveis de $\dot{\mathbf{x}}$, e as regiões de singularidade tendem a ser maiores devido à falta de mobilidade adicional.
+
+A pseudoinversa surge como ferramenta necessária, já que $J$ não é quadrada nem invertível. Assim, a solução de mínimos quadrados para a velocidade das articulações é dada por:
+
+\[
+\dot{\mathbf{q}} = J^\dagger \, \dot{\mathbf{x}}.
+\]
+
+A pseudoinversa projeta $\dot{\mathbf{x}}$ no subespaço alcançável pelas colunas de $J$, descartando automaticamente componentes impossíveis de serem realizadas fisicamente.
+
+\subsubsection{Uso da Jacobiana no Controle}
+
+A Jacobiana desempenha papel essencial em diferentes estratégias de controle. Na conversão de forças para torques, utiliza-se a relação
+\[
+\boldsymbol{\tau} = J^T F,
+\]
+permitindo controlar a interação com o ambiente. Singularidades são identificadas quando $\det(JJ^T) \approx 0$, indicando perda de mobilidade e possível amplificação indesejada das velocidades articulares. Nessas regiões, pequenas velocidades do end-effector podem exigir grandes velocidades de junta, prejudicando precisão e estabilidade, motivo pelo qual estratégias de amortecimento e regularização são frequentemente aplicadas.
+
+\subsubsection{Controle Cinemático Baseado em Jacobiana}
+
+O controle cinemático utiliza diretamente a relação diferencial para gerar velocidades articulares que levam o end-effector à pose desejada. A forma típica emprega a pseudoinversa:
+
+\[
+\dot{\mathbf{q}} = J^\dagger(\mathbf{q}) \, (\mathbf{x_d} - \mathbf{x}),
+\]
+
+Onde $(\mathbf{x_d} - \mathbf{x})$ é o erro instantâneo no espaço operacional. Para manipuladores não redundantes, a pseudoinversa coincide com a inversa da Jacobiana. Já para manipuladores redundantes, usa-se a pseudoinversa de Moore--Penrose,
+\[
+J^\dagger = J^T (JJ^T)^{-1},
+\]
+que fornece a solução de menor norma para $\dot{\mathbf{q}}$.
+
+
+\subsection{Screw Theory e Space Vectors}
+
+A teoria de \textit{screws} fornece uma descrição geométrica unificada para movimentos e forças em corpos rígidos. Os elementos centrais utilizados são os \textit{twists}, que representam movimentos instantâneos, e sua forma matricial utilizada para computar exponenciais.
+
+\subsubsection{Twist de uma Junta de Revolução}
+
+Um \textit{twist} é um vetor de dimensão 6 que descreve a velocidade instantânea de um corpo rígido. Para uma junta de revolução, ele é definido como:
+
+\[
+S = \begin{bmatrix}
+\omega \\
+\omega \times q
+\end{bmatrix}
+\]
+
+onde $\omega$ é o eixo unitário de rotação e $q$ é um ponto pertencente a esse eixo. Essa forma garante que o movimento representado seja uma rotação em torno da linha definida por $(\omega, q)$.
+
+\subsubsection{Exponencial de um Twist}
+
+A exponencial de um \textit{twist} representa a transformação associada ao movimento da junta:
+\[
+e^{[S]\theta}
+\]
+Para junta de revolução, a exponencial corresponde a uma rotação de ângulo $\theta$ ao longo do eixo $\omega$, acompanhada da translação coerente com a linha do parafuso (\textit{screw axis}). Essa operação é o núcleo do modelo cinemático via expoentes.
+
+\subsubsection{Produto das Exponenciais}
+
+A cinemática direta de um manipulador é descrita pelo produto das exponenciais:
+
+\[
+T(\theta_1, \theta_2, ..., \theta_n) = e^{[S_1]\theta_1}
+            e^{[S_2]\theta_2}
+            \cdots
+            e^{[S_n]\theta_n} \, M_0,
+\]
+
+Onde $T(\theta_1, \theta_2, ..., \theta_n)$ é a pose final do end-effector, $e^{[S_i]\theta_i}$ representa o movimento helicoidal da junta $i$ e $M_0$ é a pose do end-effector na configuração inicial de referência. 
+
+\subsection{Aprendizagem de Máquina}
+
+A aprendizagem de máquina desempenha um papel central no avanço da manipulação robótica, especialmente em ambientes complexos, dinâmicos e não estruturados. Como manipuladores precisam lidar com incertezas relacionadas a percepção, contatos, propriedades físicas variáveis e objetos desconhecidos, técnicas baseadas em dados fornecem meios para complementar ou substituir modelos analíticos tradicionais quando estes se tornam insuficientes.
+
+No domínio da percepção, métodos supervisionados e auto-supervisionados são amplamente empregados para identificar, segmentar e caracterizar objetos presentes na cena. Redes neurais profundas permitem extrair representações ricas e invariantes a iluminação, textura e oclusões, oferecendo estimativas robustas de forma, pose e regiões manipuláveis. Estratégias como uso de grandes bases de dados, dados sintéticos, anotações automatizadas e \textit{transfer learning} tornam viável treinar modelos capazes de generalizar para novos cenários. Além disso, técnicas modernas extraem keypoints semânticos e correspondências densas, possibilitando mapear a estrutura dos objetos e permitir que manipuladores adaptem estratégias de \textit{picking} e interação mesmo com variações significativas.
+
+A aprendizagem de máquina também aparece na construção de controle. Métodos de \textit{Reinforcement Learning} possibilitam que sistemas robóticos aprendam comportamentos de manipulação diretamente por meio de interação, otimizando ações com base em recompensas e erros acumulados. Esse processo permite modelar fenômenos difíceis de representar matematicamente, como atrito complexo, deformações e contatos múltiplos. Abordagens baseadas em gradiente de política, métodos de valor e técnicas híbridas que combinam modelos físicos com módulos aprendidos surgem como alternativas promissoras para alcançar controle adaptativo e robusto. Embora ainda enfrentem desafios de eficiência e estabilidade, essas técnicas ampliam o conjunto de habilidades possíveis para manipuladores em ambientes reais.
+
+De maneira geral, a fusão entre modelos clássicos e componentes aprendidos constitui uma estratégia eficaz para aumentar a autonomia e a flexibilidade dos robôs. A aprendizagem de máquina fornece ferramentas para perceber melhor, adaptar-se a variações e aprender estratégias que seriam inviáveis com abordagens puramente analíticas. Assim, ela se torna um elemento fundamental na construção de sistemas de manipulação capazes de atuar de forma inteligente, segura e generalizável.
+
+\section{Materiais}
+
+Para este trabalho foi utilizado o Robotics Toolbox for Python, desenvolvido por Peter Corke, como ferramenta principal de simulação do manipulador. Esse toolbox fornece recursos completos para modelagem de robôs seriais, permitindo criar ou importar modelos via parâmetros DH, calcular cinemática direta e inversa, gerar trajetórias articulares e visualizar os movimentos em ambiente virtual. A integração com o ecossistema do Python facilita a execução de análises, experimentos e validações de controle, possibilitando testar estratégias de manipulação sem a necessidade de hardware físico.
+
+\section{Metodologia e Resultados}
+
+Para este trabalho, foi proposto um modelo de robô manipulador composto por cinco juntas de revolução, denominado FRANK. Um exemplo visual do robô pode ser observado na Figura \ref{frank}, enquanto a Figura \ref{medidas} apresenta uma vista complementar contendo as principais dimensões utilizadas no desenvolvimento do modelo.
+
+\begin{figure}[htb]
+ \caption{Robô manipulador proposto para este trabalho.} \label{robo}  
+ \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \caption{FRANK.} \label{frank} 
+    \includegraphics[width=\columnwidth]{imagens/frank.png}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \caption{Vista com medidas.} \label{medidas} 
+    \includegraphics[width=\columnwidth]{imagens/frank_medidas.png}
+  \end{subfigure}
+  \par
+  \footnotesize{Fonte: elaboração dos autores.}
+\end{figure}
+
+A metodologia adotada incluiu a determinação dos parâmetros de Denavit–Hartenberg do manipulador por meio da definição dos sistemas de coordenadas e identificação das medidas necessárias, seguida da implementação do modelo completo do robô na Robotics Toolbox de Peter Corke. Com o modelo definido, foram obtidos os cálculos da Jacobiana e aplicada a cinemática inversa diferencial para relacionar velocidades articulares e do \textit{end-effector}, além da realização da cinemática direta por Screw Theory como abordagem complementar. Por fim, desenvolveu-se uma simulação de Pick and Place na toolbox, permitindo verificar a coerência entre a modelagem teórica e o desempenho do robô em tarefas de manipulação.
+
+
+\subsection{Parâmetros de Denavit-Hartenberg}
+
+Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg correspondentes a cada elo e junta do robô. Para isso, adotou-se o procedimento clássico de definição dos sistemas de coordenadas, identificação dos eixos das juntas e medição das distâncias e ângulos necessários. A partir dessas informações, foi construída a tabela de parâmetros de Denavit–Hartenberg (Tabela \ref{tabela}), que serviu como base para a modelagem cinemática do manipulador.
+
+\begin{table}[h!]
+    \caption{Parâmetros de Denavit-Hartenberg para o robô FRANK.} \label{tabela} 
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \setlength{\tabcolsep}{10pt}
+    \begin{tabular}{c c c c}
+        \hline
+        $\theta_j$ & $d_j$ & $a_j$ & $\alpha_j$ \\
+        \hline
+        $\theta_1$         & 0,155 & 0,287 & $\frac{\pi}{2}$ \\
+        $\theta_2 + \frac{\pi}{2}$ & 0     & 0,8   & 0  \\
+        $\theta_3$         & 0     & 0,8   & 0  \\
+        $\theta_4 + \frac{\pi}{2}$ & 0     & 0 & $\frac{\pi}{2}$ \\
+        $\theta_5$         & 0,317 & 0     & 0  \\
+        \hline
+    \end{tabular}
+    \par
+    \vspace*{0.2 cm}
+    \footnotesize{Fonte: elaboração dos autores.}
+\end{table}
+
+
+\subsection{Implementação do Robô em Simulação}
+
+Após a definição dos parâmetros de Denavit-Hartenberg, o modelo completo do robô FRANK foi implementado utilizando a Robotics Toolbox de Peter Corke. Essa ferramenta permitiu representar o manipulador por meio da sequência de elos definidos pela tabela DH, facilitando a validação dos parâmetros obtidos e a realização de simulações.
+
+\begin{lstlisting}[caption={Definição do robô FRANK}, label={definicao_frank}]
+import numpy as np
+import roboticstoolbox as rtb
+
+l1 = rtb.DHLink(a=0.287, alpha=np.pi/2, d=0.155, offset=0)
+l2 = rtb.DHLink(a=0.8, alpha=0, d=0, offset=np.pi/2)
+l3 = rtb.DHLink(a=0.8, alpha=0, d=0, offset=0)
+l4 = rtb.DHLink(a=0, alpha=np.pi/2, d=0.0, offset=np.pi/2)
+l5 = rtb.DHLink(a=0, alpha=0, d=0.317, offset=0)
+robot = rtb.DHRobot([l1, l2, l3, l4, l5], name="Frank")
+\end{lstlisting}
+
+O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRANK diretamente a partir dos valores numéricos dos parâmetros de Denavit–Hartenberg, utilizando as classes DHLink e DHRobot da Robotics Toolbox. Cada linha define as características geométricas de um elo, e, ao final, todos são reunidos em um único objeto DHRobot, que representa o manipulador no ambiente Python e permite executar operações como cálculo de cinemática e manipulação do modelo.
+
+\begin{figure}[H]
+\centering
+    \caption{\footnotesize{Ilustração da simulação do FRANK no Robotics Toolbox.}}
+    \includegraphics[width=0.8\textwidth]{imagens/frank_rtb.png}
+    \label{frank_rtb}
+    \par       
+    \footnotesize{Fonte: elaboração do autor.}
+\end{figure}
+
+\subsection{Cálculos da Jacobiana}
+
+Com o modelo estabelecido, foram desenvolvidos os cálculos da Jacobiana do robô FRANK. A matriz Jacobiana foi posteriormente utilizada na descrição da cinemática inversa diferencial, permitindo relacionar velocidades do end-effector com velocidades das juntas.
+
+O cálculo da Jacobiana no Código \ref{jacob_frank} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros simbólicos das juntas. 
+
+Em seguida, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições intermediárias $O_1, O_2, O_3, O_4, O_5$ de cada junta no espaço. Para cada elo, extrai-se também o vetor de direção do eixo da junta ($Z_1$ a $Z_5$), obtido a partir das submatrizes de rotação acumuladas. 
+
+Com as posições $O_i$ e os vetores $Z_i$, o código calcula as colunas da Jacobiana: a parte linear é dada pelo produto vetorial entre o eixo da junta e o vetor que liga a junta ao end-effector, enquanto a parte angular corresponde diretamente aos vetores $Z_i$. Por fim, todas as colunas são reunidas em uma única matriz $J$, que é simplificada simbolicamente e posteriormente avaliada numericamente por meio da substituição dos valores reais.
+
+\begin{lstlisting}[caption={Cálculo de Jacobiana do manipulador.}, label={jacob_frank}]
+from sympy import *
+import numpy as np
+
+t1, t2, t3, t4, t5 = symbols('theta1 theta2 theta3 theta4 theta5')
+d1, a1, a2, a3, d5 = symbols('d1 a1 a2 a3 d5')
+
+T01 = Matrix([[cos(t1), 0, sin(t1), cos(t1)*a1], [sin(t1), 0, -cos(t1), sin(t1)*a1], [0, 1, 0, d1], [0, 0, 0, 1]])
+T01.subs({t1: np.pi/6, d1: 0.155, a1: 0.287})
+
+T12 = Matrix([[-sin(t2), -cos(t2), 0, -sin(t2)*a2], [cos(t2), -sin(t2), 0, cos(t2)*a2], [0, 0, 1, 0], [0, 0, 0, 1]])
+T12.subs({t2: np.pi/6, a2: 0.8})
+
+T23 = Matrix([[cos(t3), -sin(t3), 0, cos(t3)*a3], [sin(t3), cos(t3), 0, sin(t3)*a3], [0, 0, 1, 0], [0, 0, 0, 1]])
+T23.subs({t3: np.pi/6, a3: 0.8})
+
+T34 = Matrix([[-sin(t4), 0, cos(t4), 0], [cos(t4), 0, sin(t4), 0], [0, 1, 0, 0], [0, 0, 0, 1]])
+T34.subs({t4: np.pi/6})
+
+T45 = Matrix([[cos(t5), -sin(t5), 0, 0], [sin(t5), cos(t5), 0, 0], [0, 0, 1, d5], [0, 0, 0, 1]])
+T45.subs({t5: np.pi/6, d5: 0.317})
+
+T05 = T01*T12*T23*T34*T45
+T05 = simplify(T05)
+
+O1 = T01 * Matrix ([[0], [0], [0], [1]])
+O1 = O1[0:3, :]
+O1.subs({t1: np.pi/6, d1: 0.155, a1: 0.287})
+
+O2 = T01* T12 * Matrix ([[0], [0], [0], [1]])
+O2 = simplify(O2[0:3, :])
+O2.subs({t1: np.pi/6, t2: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8})
+
+O3 = T01* T12 * T23 * Matrix ([[0], [0], [0], [1]])
+O3 = simplify(O3[0:3, :])
+O3.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8})
+
+O4 = T01* T12 * T23 * T34 * Matrix ([[0], [0], [0], [1]])
+O4 = simplify(O4[0:3, :])
+O4.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8})
+
+O5 = T01* T12 * T23 * T34 * T45 * Matrix ([[0], [0], [0], [1]])
+O5 = simplify(O5[0:3, :])
+O5.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
+
+Z1 = Matrix ([[0], [0], [1],])
+
+Z2 = T01[0:3, 0:3] * Matrix ([[0], [0], [1]])
+
+Z3 = T01[0:3, 0:3] * T12[0:3, 0:3] * Matrix ([[0], [0], [1]])
+
+Z4 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * Matrix ([[0], [0], [1]])
+
+Z5 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * T34[0:3, 0:3] * Matrix ([[0], [0], [1]])
+Z5 = simplify(Z5)
+
+JV1 = Z1.cross(O5)
+JW1 = Z1
+
+JV2 = simplify(Z2.cross(O5 - O1))
+JW2 = Z2
+
+JV3 = simplify(Z3.cross(O5 - O2))
+JW3 = Z3
+
+JV4 = simplify(Z4.cross(O5 - O3))
+JW4 = Z4
+
+JV5 = simplify(Z5.cross(O5 - O4))
+JW5 = Z5
+
+J = simplify(Matrix([[JV1, JV2, JV3, JV4, JV5], [JW1, JW2, JW3, JW4, JW5]]))
+J.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
+\end{lstlisting}
+
+A matriz Jacobiana obtida a partir do desenvolvimento simbólico das transformações homogêneas e dos vetores de posição e orientação das juntas resulta na seguinte expressão. Essa matriz relaciona diretamente as velocidades articulares com as velocidades linear e angular do efetuador final, refletindo a estrutura cinemática do manipulador de cinco graus de liberdade.
+
+\begin{align*}
+J_{1,1} &= \left(-a_{1} + a_{2}S_{2} + a_{3}S_{23} + d_{5}S_{234}\right) S_{1} \\
+J_{1,2} &= -\left(a_{2}C_{2} + a_{3}C_{23} + d_{5}C_{234}\right) C_{1} \\
+J_{1,3} &= -\left(a_{3}C_{23} + d_{5}C_{234}\right) C_{1} \\
+J_{1,4} &= - d_{5} C_{1} C_{234} \\
+J_{1,5} &= 0 \\
+\end{align*}
+\begin{align*}
+J_{2,1} &= \left(a_{1} - a_{2}S_{2} - a_{3}S_{23} - d_{5}S_{234}\right) C_{1} \\
+J_{2,2} &= -\left(a_{2}C_{2} + a_{3}C_{23} + d_{5}C_{234}\right) S_{1} \\
+J_{2,3} &= -\left(a_{3}C_{23} + d_{5}C_{234}\right) S_{1} \\
+J_{2,4} &= - d_{5} S_{1} C_{234} \\
+J_{2,5} &= 0 \\
+\\
+J_{3,1} &= 0 \\
+J_{3,2} &= - a_{2}S_{2} - a_{3}S_{23} - d_{5}S_{234} \\
+J_{3,3} &= - a_{3}S_{23} - d_{5}S_{234} \\
+J_{3,4} &= - d_{5}S_{234} \\
+J_{3,5} &= 0 \\
+\\
+J_{4,1} &= 0 \\
+J_{4,2} &= S_{1} \\
+J_{4,3} &= S_{1} \\
+J_{4,4} &= S_{1} \\
+J_{4,5} &= - S_{234} C_{1} \\
+\\
+J_{5,1} &= 0 \\
+J_{5,2} &= - C_{1} \\
+J_{5,3} &= - C_{1} \\
+J_{5,4} &= - C_{1} \\
+J_{5,5} &= - S_{1} S_{234} \\
+\\
+J_{6,1} &= 1 \\
+J_{6,2} &= 0 \\
+J_{6,3} &= 0 \\
+J_{6,4} &= 0 \\
+J_{6,5} &= C_{234}
+\end{align*}
+
+\[
+\mathbf{J} =
+\begin{bmatrix}
+J_{1,1} & J_{1,2} & J_{1,3} & J_{1,4} & J_{1,5} \\
+J_{2,1} & J_{2,2} & J_{2,3} & J_{2,4} & J_{2,5} \\
+J_{3,1} & J_{3,2} & J_{3,3} & J_{3,4} & J_{3,5} \\
+J_{4,1} & J_{4,2} & J_{4,3} & J_{4,4} & J_{4,5} \\
+J_{5,1} & J_{5,2} & J_{5,3} & J_{5,4} & J_{5,5} \\
+J_{6,1} & J_{6,2} & J_{6,3} & J_{6,4} & J_{6,5}
+\end{bmatrix}
+\]
+\par
+\par
+
+Na matriz acima, $\mathbf{J}$, para simplificar a escrita, adotou-se a seguinte convenção de notação:
+
+\begin{itemize}
+    \item $S_i = \sin(\theta_i)$, ou seja, o seno do ângulo da junta $i$;
+    \item $C_i = \cos(\theta_i)$, ou seja, o cosseno do ângulo da junta $i$;
+    \item $S_{ij} = \sin(\theta_i + \theta_j)$ e $C_{ij} = \cos(\theta_i + \theta_j)$, representando a soma de ângulos de duas juntas consecutivas; de forma análoga para $S_{ijk}$, $C_{ijk}$, etc.;
+    \item Os parâmetros $a_k$ representam os comprimentos dos elos, $d_k$ as distâncias ao longo do eixo das juntas prismáticas ou deslocamentos fixos, e $\theta_k$ os ângulos das juntas.
+\end{itemize}
+
+Essa notação foi usada para tornar equações de cinemática mais legíveis, evitando expressões longas com múltiplos senos e cossenos.
+
+\subsection{Cinemática Inversa Diferencial}
+
+A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e articulares, mediada pela matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta os valores articulares passo a passo a partir do erro entre a pose atual e a pose final.
+
+No Código \ref{dif_ik}, essa abordagem é implementada calculando-se inicialmente a pose do robô e definindo velocidades proporcionais ao erro de posição. A cada iteração, a função \texttt{jacobian\_ik} obtém a Jacobiana na configuração corrente, monta o vetor de velocidades cartesianas e utiliza sua pseudoinversa para determinar as velocidades articulares correspondentes. Em seguida, essas velocidades são integradas para atualizar as juntas. Após cada atualização, recalcula-se o erro em relação à pose desejada e verifica-se a convergência, repetindo o processo até que a posição e a orientação finais sejam atingidas ou que o número máximo de iterações seja alcançado.
+
+\begin{lstlisting}[caption={Cinemática inversa diferencial}, label={dif_ik}]
+import numpy as np
+import roboticstoolbox as rtb
+
+def differential_ik(robot: rtb.DHRobot, qi, final_pos, final_ori):
+    initial_fk = robot.fkine(qi)
+    initial_pos = initial_fk.t 
+    initial_ori = initial_fk.rpy()
+    max_iterations = 100
+    lin_gain = 2.0
+    ang_gain = 0.2
+    lin_vel = [lin_gain * (x[0] - x[1]) for x in zip(final_pos, initial_pos)]
+    ang_vel = [0,0,0]
+    
+    for i in range(0, max_iterations): 
+        qn = jacobian_ik(robot, qi, lin_vel=lin_vel, ang_vel=ang_vel, dt=0.1)
+        curr_pos = robot.fkine(qn)
+        print(f"Position on iteration {i}: {[format(i, '.3f') for i in curr_pos.t]}")
+        print(f"Orientation on iteration {i}: {[format(i, '.3f') for i in curr_pos.rpy()]}")
+
+        reached_pos = np.allclose(final_pos, curr_pos.t,atol=1e-3)
+        reached_angle = np.allclose(final_ori, curr_pos.rpy(),atol=1e-3)
+        
+        if reached_pos and reached_angle: break
+        
+        qi = qn
+        lin_vel = [lin_gain * (x[0] - x[1]) for x in zip(final_pos, curr_pos.t)]
+
+    return qn
+
+def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
+    J = robot.jacob0(q)
+    v = np.zeros(6)
+    v[:3] = lin_vel
+    v[3:] = ang_vel
+    dq = np.linalg.pinv(J) @ v
+    nq = q + dq * dt
+    return nq
+\end{lstlisting}
+
+\subsection{Cinemática com Screw Theory}
+
+Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. Essa análise permitiu comparar métodos e reforçar a compreensão estrutural do manipulador.
+
+\subsection{Algoritmo de Pick and Place}
+
+Foi desenvolvido um experimento de Pick and Place utilizando a Robotics Toolbox de Peter Corke, no qual o modelo do FRANK foi empregado para executar trajetórias e manipular objetos dentro do ambiente simulado. Essa etapa permitiu avaliar a coerência entre os modelos teóricos e o comportamento do robô em tarefas de manipulação.
+
+\subsection{Coleta de Dados para Treinamento}
+
+O uso de grandes bases de dados tem se tornado essencial no treinamento de redes neurais aplicadas à robótica. Modelos baseados em aprendizagem supervisionada dependem de conjuntos de dados bem estruturados que relacionem estados das juntas, poses desejadas e movimentos resultantes, permitindo que a rede aprenda padrões que seriam difíceis de modelar analiticamente. 
+
+Neste trabalho, gera-se um conjunto de dados contendo poses desejadas e suas respectivas soluções de cinemática inversa com o objetivo de treinar uma rede neural capaz de imitar o resolvedor da \textit{Robotics Toolbox} de Peter Corke. O Código \ref{data_generator} implementa esse processo ao amostrar configurações articulares aleatórias, calcular suas poses por cinemática direta e empregar o método \texttt{ikine\_LM} para obter a solução de cinemática inversa. Quando o resolvedor converge, registram-se em arquivo a pose alvo e as configurações inicial e final, formando exemplos supervisionados que permitirão ao modelo aprender o comportamento do solver tradicional.
+
+O Código \ref{data_generator} também define o manipulador FRANK e automatiza a geração dessas amostras. A cada iteração, uma configuração aleatória de juntas é utilizada para calcular uma pose do end-effector, que passa a ser o objetivo da cinemática inversa. A partir de uma configuração inicial igualmente aleatória, o método \texttt{ikine\_LM} busca recuperar os valores das juntas compatíveis com essa pose. Quando a solução é encontrada, o código gera uma trajetória suave entre \textit{q\_initial} e \textit{q\_solution} e armazena as informações em um arquivo CSV. Repetindo esse procedimento diversas vezes, obtém-se uma base de dados estruturada que servirá de referência para o treinamento da rede neural.
+
+
+\begin{lstlisting}[caption={Script para Coleta de Dados}, label={data_generator}]
+import numpy as np
+import matplotlib.pyplot as plt
+import csv
+import os
+import argparse
+import roboticstoolbox as rtb
+from spatialmath import SE3
+
+
+def robot():
+    l1 = rtb.DHLink(a=0.287, alpha=np.pi/2, d=0.155, offset=0)
+    l2 = rtb.DHLink(a=0.8, alpha=0, d=0, offset=np.pi/2)
+    l3 = rtb.DHLink(a=0.8, alpha=0, d=0.0, offset=0)
+    l4 = rtb.DHLink(a=0.0, alpha=np.pi/2, d=0.0, offset=np.pi/2)
+    l5 = rtb.DHLink(a=0.0, alpha=0, d=0.317, offset=0)
+
+    return rtb.DHRobot(
+        [l1, l2, l3, l4, l5],
+        name="Frank"
+    )
+
+    
+def save_to_csv(target_pose, trajectory, dataset_path):
+    os.makedirs(dataset_path, exist_ok=True)
+
+    existing_files = [f for f in os.listdir(dataset_path) if f.endswith('.csv')]
+    
+    if not existing_files:
+        file_index = 0
+    else:
+        indices = [int(f.split('.')[0]) for f in existing_files]
+        file_index = max(indices) + 1
+
+    file_path = os.path.join(dataset_path, f"{file_index}.csv")
+
+    q_initial = trajectory.q[0]
+    q_final = trajectory.q[-1]
+
+    row = np.concatenate((target_pose, q_initial, q_final))
+
+    header = [
+        'target_x', 'target_y', 'target_z', 'target_roll', 'target_pitch', 'target_yaw',
+        'q0_init', 'q1_init', 'q2_init', 'q3_init', 'q4_init',
+        'q0_final', 'q1_final', 'q2_final', 'q3_final', 'q4_final'
+    ]
+
+    with open(file_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(header)
+        writer.writerow(row)
+    
+ 
+def execute(robot, target_pose, q_initial, q_solution, dataset_path):
+    trajectory = rtb.jtraj(q_initial, q_solution, 100)
+    save_to_csv(target_pose, trajectory, dataset_path)
+ 
+
+dataset_path = "./data"
+num_iterations = 1000
+robot = robot()
+
+for i in range(num_iterations):
+
+    qlim = robot.qlim.T
+
+    q_random = np.array([np.random.uniform(low, high) for low, high in qlim])
+    T = robot.fkine(q_random)
+
+    pose = {
+        "x": T.t[0],
+        "y": T.t[1],
+        "z": T.t[2],
+        "roll": T.rpy()[0],
+        "pitch": T.rpy()[1],
+        "yaw": T.rpy()[2]
+    }
+        
+    q_initial = np.random.uniform(-np.pi, np.pi, robot.n)
+    
+    T_goal = SE3.Trans(pose['x'], pose['y'], pose['z']) * \
+             SE3.RPY(pose['roll'], pose['pitch'], pose['yaw'], order='zyx')
+
+    sol = robot.ikine_LM(T_goal, q0=q_initial)
+
+    q_solution, success = sol.q, sol.success
+
+    if success:
+        target_pose = np.array([
+            pose["x"], 
+            pose["y"], 
+            pose["z"], 
+            pose["roll"], 
+            pose["pitch"], 
+            pose["yaw"]
+        ])
+        
+        print(f"Initial joint configuration (q_initial): {np.round(q_initial, 4)}")
+        print(f"Target Pose: {np.round(target_pose, 4)}")
+    
+        execute(robot, target_pose, q_initial, q_solution, dataset_path)
+    else:
+        continue
+\end{lstlisting}
+
+
+\section{Conclusão}
+
+Os trabalhos realizados permitiram modelar e analisar de forma completa a cinemática do manipulador FRANK, desde a definição dos parâmetros de Denavit--Hartenberg até a implementação de métodos numéricos de cinemática inversa baseados na Jacobiana. As simulações confirmaram a consistência dos modelos e a capacidade do robô em executar trajetórias e tarefas básicas. Além disso, a geração automática de dados mostrou-se eficaz para apoiar o treinamento de uma rede neural destinada a aproximar o comportamento do solver de cinemática inversa da \textit{Robotics Toolbox}. Em conjunto, esses resultados fornecem uma base sólida para estudos futuros em controle e aprendizagem de máquina aplicada à robótica manipuladora.
+
+Adicionalmente, foi implementado um modelo com camadas totalmente conectadas para realizar a regressão das trajetórias geradas pelo script de coleta de dados, buscando aproximar o comportamento do solver de cinemática inversa. Entretanto, o modelo não apresentou convergência satisfatória: as trajetórias previstas não alcançavam a pose desejada do end-effector, indicando limitação da arquitetura adotada para essa tarefa. Assim, trabalhos futuros incluem a investigação de modelos mais expressivos, como arquiteturas baseadas em \textit{Transformers} ou métodos generativos, especialmente modelos de difusão, que podem oferecer maior capacidade de generalização e precisão na estimação das configurações das juntas.
+
+
+\end{document}
