@@ -597,7 +597,6 @@ Em cada iteração, a função \texttt{jacobian\_ik} é chamada para obter a Jac
 
 Após cada atualização, o código recalcula a pose do robô e verifica se a posição e a orientação estão suficientemente próximas dos valores desejados. Caso o erro permaneça acima do limite admissível, uma nova iteração é realizada com o erro de posição atualizado, refinando progressivamente o movimento. O processo continua até que se atinja a convergência ou que o número máximo de iterações seja alcançado, resultando na configuração de juntas que melhor aproxima a pose final especificada.
 
-
 \begin{lstlisting}[caption={Cinemática inversa diferencial}, label={dif_ik}]
 import numpy as np
 import roboticstoolbox as rtb
@@ -616,7 +615,6 @@ def differential_ik(robot: rtb.DHRobot, qi, final_pos, final_ori):
         qn = jacobian_ik(robot, qi, lin_vel=lin_vel, ang_vel=ang_vel, dt=0.1)
         curr_pos = robot.fkine(qn)
         print(f"Position on iteration {i}: {[format(i, '.3f') for i in curr_pos.t]}")
-        print(f"Orientation on iteration {i}: {[format(i, '.3f') for i in curr_pos.rpy()]}")
 
         reached_pos = np.allclose(final_pos, curr_pos.t,atol=1e-3)
         reached_angle = np.allclose(final_ori, curr_pos.rpy(),atol=1e-3)
@@ -638,7 +636,47 @@ def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
     return nq
 \end{lstlisting}
 
-% TODO: Acho que vale a pena falar que essa solução, apesar de funcionar, não converge muito bem por conta de singularidades, etc.
+Para posições próximas de singularidades a solução não apresenta uma boa convergência e para um pequeno deslocamento linear um grande deslocamento das juntas é produzido. Técnicas de otimização podem ser aplicadas para solucionar esse problema como adicionar restrições de velocidade, posição e aceleração. Na implementação proposta no código \ref{dif_ik} o termo da velocidade angular foi omitido para melhorar a convergência do método.
+
+Para uma movimentaçaõ da posição (1.6527 -0.0000 0.4037) para a posição (1.2, 0.4, 0.5) a cinemática inversa converge após 27 iterações como mostrado nos logs abaixo:
+
+\begin{lstlisting}[label={dif_ik}]
+Initial position: [1.6527 -0.0000 0.4037]
+Initial orientation: [3.1416 -0.0000 -0.0000]
+Final position: [1.2, 0.4, 0.5]
+Final orientation: [3.141592653589793, 0, 0]
+Linear Velocity: [-0.9053708498984765, 0.8, 0.19262915010152393]
+Angular Velocity: [0, 0, 0]
+Position on iteration 0: ['1.550', '0.075', '0.415']
+Position on iteration 1: ['1.476', '0.137', '0.429']
+Position on iteration 2: ['1.419', '0.187', '0.442']
+Position on iteration 3: ['1.374', '0.228', '0.452']
+Position on iteration 4: ['1.339', '0.262', '0.461']
+Position on iteration 5: ['1.311', '0.289', '0.469']
+Position on iteration 6: ['1.288', '0.311', '0.475']
+Position on iteration 7: ['1.270', '0.328', '0.480']
+Position on iteration 8: ['1.256', '0.342', '0.484']
+Position on iteration 9: ['1.245', '0.354', '0.487']
+Position on iteration 10: ['1.236', '0.363', '0.490']
+Position on iteration 11: ['1.229', '0.370', '0.492']
+Position on iteration 12: ['1.223', '0.376', '0.493']
+Position on iteration 13: ['1.218', '0.381', '0.495']
+Position on iteration 14: ['1.215', '0.385', '0.496']
+Position on iteration 15: ['1.212', '0.388', '0.497']
+Position on iteration 16: ['1.209', '0.390', '0.497']
+Position on iteration 17: ['1.208', '0.392', '0.498']
+Position on iteration 18: ['1.206', '0.394', '0.498']
+Position on iteration 19: ['1.205', '0.395', '0.499']
+Position on iteration 20: ['1.204', '0.396', '0.499']
+Position on iteration 21: ['1.203', '0.397', '0.499']
+Position on iteration 22: ['1.202', '0.397', '0.499']
+Position on iteration 23: ['1.202', '0.398', '0.499']
+Position on iteration 24: ['1.202', '0.398', '0.500']
+Position on iteration 25: ['1.201', '0.399', '0.500']
+Position on iteration 26: ['1.201', '0.399', '0.500']
+Position on iteration 27: ['1.201', '0.399', '0.500']
+Final IK position is:  [0.3209 -0.2358 -1.4807 -1.4252 0.3209]
+\end{lstlisting}
 
 \subsection{Cinemática com Screw Theory}
 

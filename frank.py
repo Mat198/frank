@@ -16,6 +16,9 @@ L5 = rtb.RevoluteDH(a=0.0, alpha=0, d=0.317, offset=0)
 # Create the robot model
 robot = rtb.DHRobot([L1, L2, L3, L4, L5], name="Frank")
 print(robot)
+q = [0, -np.pi/4, -np.pi/4, 0, 0]
+robot.plot(q, backend='pyplot', block=True)
+
 print("T1")
 print(L1.A(np.pi/6))
 print("T2")

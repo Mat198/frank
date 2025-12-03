@@ -24,7 +24,6 @@ def differential_ik(robot: rtb.DHRobot, qi, final_pos, final_ori):
         qn = jacobian_ik(robot, qi, lin_vel=lin_vel, ang_vel=ang_vel, dt=0.1)
         curr_pos = robot.fkine(qn)
         print(f"Position on iteration {i}: {[format(i, '.3f') for i in curr_pos.t]}")
-        print(f"Orientation on iteration {i}: {[format(i, '.3f') for i in curr_pos.rpy()]}")
 
         # Verifica se chegamos na posição alvo
         reached_pos = np.allclose(final_pos, curr_pos.t,atol=1e-3)
