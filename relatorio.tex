@@ -153,7 +153,7 @@ A cinemática inversa, ao contrário da cinemática direta, pode apresentar múl
 
 Para manipuladores com até 4 graus de liberdade ou estrutura geométrica particular é possível derivar soluções analíticas fechadas. Se 3 eixos consecutivos se cruzam em um ponto, ou são paralelos, é possível aplicar a solução de Pieper para obter uma solução fechada para manipuladores de 6 graus de liberdade. Porém, para manipuladores com mais de 6 graus de liberdade vão existir múltiplas soluções e soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear e métodos numéricos são utilizados.
 
-\subsection{Jacobiano, Cinemática Diferencial e Controle}
+\subsection{Jacobiano e Cinemática Diferencial}
 
 O Jacobiano é uma ferramenta central no estudo e controle de manipuladores robóticos, pois estabelece a relação entre velocidade no espaço cartesiano e no espaço das juntas dada por:
 
@@ -255,41 +255,6 @@ Substituindo a relação inversa do Jacobiano é possível obter:
 
 Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.  
 
-\subsubsection{Controle Cinemático Baseado no Jacobiano}
-
-% TODO: Corrigir essa seção
-Seguindo uma ideia similar ao que foi desenvolvido na cinemática diferencial, é possível realizar um controle de posição das juntas utilizando o Jacobiano.
-Dado um erro cartesiano atual
-\[
-\mathbf{e} = \mathbf{x_d} - \mathbf{x}(\mathbf{q}),
-\]
-podemos corrigi-lo iterativamente utilizando a atualização
-\[
-\mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, \mathbf{e} \ dt,
-\]
-onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja próximo de uma singularidade. 
-
-Apesar de eficaz, o método numérico tem limitações. Próximo a singularidades, a Jacobiana se torna mal condicionada, levando a movimentos exagerados ou instáveis nas juntas. Além disso, o método numérico necessita de uma boa inicialização, caso contrário pode convergir para uma solução indesejada ou ficar preso em mínimos locais.
-
-A Jacobiana desempenha papel essencial em diferentes estratégias de controle. Na conversão de forças para torques, utiliza-se a relação
-\[
-\boldsymbol{\tau} = J^T F,
-\]
-permitindo controlar a interação com o ambiente. Singularidades são identificadas quando $\det(JJ^T) \approx 0$, indicando perda de mobilidade e possível amplificação indesejada das velocidades articulares. Nessas regiões, pequenas velocidades do end-effector podem exigir grandes velocidades de junta, prejudicando precisão e estabilidade, motivo pelo qual estratégias de amortecimento e regularização são frequentemente aplicadas.
-
-O controle cinemático utiliza diretamente a relação diferencial para gerar velocidades articulares que levam o end-effector à pose desejada. A forma típica emprega a pseudoinversa:
-
-\[
-\dot{\mathbf{q}} = J^\dagger(\mathbf{q}) \, (\mathbf{x_d} - \mathbf{x}),
-\]
-
-Onde $(\mathbf{x_d} - \mathbf{x})$ é o erro instantâneo no espaço operacional. Para manipuladores não redundantes, a pseudoinversa coincide com a inversa da Jacobiana. Já para manipuladores redundantes, usa-se a pseudoinversa de Moore--Penrose,
-\[
-J^\dagger = J^T (JJ^T)^{-1},
-\]
-que fornece a solução de menor norma para $\dot{\mathbf{q}}$.
-
-
 \subsection{Screw Theory e Space Vectors}
 
 A teoria de \textit{screws} fornece uma descrição geométrica unificada para movimentos e forças em corpos rígidos. Os elementos centrais utilizados são os \textit{twists}, que representam movimentos instantâneos, e sua forma matricial utilizada para computar exponenciais.
@@ -340,7 +305,7 @@ Para este trabalho foi utilizado o Robotics Toolbox for Python, desenvolvido por
 
 \section{Metodologia e Resultados}
 
-Para este trabalho, foi proposto um modelo de robô manipulador composto por cinco juntas de revolução, denominado FRANK. Um exemplo visual do robô pode ser observado na Figura \ref{frank}, enquanto a Figura \ref{medidas} apresenta uma vista complementar contendo as principais dimensões utilizadas no desenvolvimento do modelo.
+Para este trabalho, foi utilizado o robô manipulador composto por cinco juntas de revolução, denominado FRANK. O modelo computacional do robô pode ser observado na Figura \ref{frank}, enquanto a Figura \ref{medidas} apresenta uma vista complementar contendo as principais dimensões utilizadas no desenvolvimento do modelo.
 
 \begin{figure}[htb]
  \caption{Robô manipulador proposto para este trabalho.} \label{robo}  
