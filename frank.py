@@ -45,9 +45,9 @@ print(L1.A(angle) @ L2.A(angle) @ L3.A(angle) @ L4.A(angle) @ L5.A(angle))
 print("O5 - Origem")
 print(L1.A(0) @ L2.A(-np.pi/4) @ L3.A(-np.pi/4) @ L4.A(-np.pi/2) @ L5.A(0))
 q = [0, -np.pi/4, -np.pi/4, 0, 0]
-# q = [0, 0, 0, 0, 0]
+q = [0, 0, 0, 0, 0]
 # q = [np.pi/6, np.pi/6 , np.pi/6, np.pi/6, np.pi/6]
-# robot.plot(q, backend='pyplot', block=True)
+robot.plot(q, backend='pyplot', block=True)
 jacob = robot.jacob0(q)
 print("Size of the Jacobian: ", len(jacob), "x", len(jacob[0]))
 print([format(i, '>7.4f') for i in jacob[0]])
