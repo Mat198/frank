@@ -301,7 +301,7 @@ onde cada termo $e^{[S_i]\theta_i}$ representa o movimento helicoidal da junta $
 
 \subsection{Aprendizagem de Máquina}
 
-Atualmente, métodos de aprendizagem de máquina tem sido bastante usada em manipulação robótica, complementando e, em alguns casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos, ruídos e propriedades físicas difíceis de modelar. 
+Atualmente, métodos de aprendizagem de máquina tem sido bastante usados em manipulação robótica, complementando e, em alguns casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos, ruídos e propriedades físicas difíceis de modelar. 
 
 Redes neurais profundas podem, por exemplo, fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos. Por outro lado, algoritmos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que não podem ser difíceis de serem modelados pelos métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia e a adaptabilidade dos manipuladores.
 
@@ -346,7 +346,7 @@ Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg corresp
     \footnotesize{Fonte: elaboração dos autores.}
 \end{figure}
 
-A partir dessas informações, foi construída a tabela \ref{tabela} com os parâmetros de Denavit–Hartenberg, que serviu como base para a modelagem do manipulador. 
+A partir dessas informações, foi construída a Tabela \ref{tabela} com os parâmetros de Denavit–Hartenberg, que serviu como base para a modelagem do manipulador. 
 
 \begin{table}[h!]
     \caption{Parâmetros de Denavit-Hartenberg para o robô FRANK.} \label{tabela} 
@@ -373,7 +373,7 @@ A partir dessas informações, foi construída a tabela \ref{tabela} com os par�
 
 Após a definição dos parâmetros de Denavit-Hartenberg, o modelo completo do robô FRANK foi implementado utilizando a Robotics Toolbox de Peter Corke. Essa ferramenta permitiu representar o manipulador por meio da sequência de elos definidos pela tabela DH, facilitando a validação dos parâmetros obtidos e a realização de simulações.
 
-O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRANK diretamente a partir dos valores numéricos dos parâmetros de Denavit–Hartenberg da tabela \ref{tabela}, utilizando as classes DHLink e DHRobot da Robotics Toolbox. As variáveis $l_i$ definem as características geométricas de um elo, e, ao final, todos são reunidos em um único objeto DHRobot chamado de robot, que representa o manipulador no ambiente Python e permite executar operações como cálculo de cinemática e manipulação do modelo.
+O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRANK diretamente a partir dos valores numéricos dos parâmetros de Denavit–Hartenberg da Tabela \ref{tabela}, utilizando as classes DHLink e DHRobot da Robotics Toolbox. As variáveis $l_i$ definem as características geométricas de um elo, e, ao final, todos são reunidos em um único objeto DHRobot chamado de robot, que representa o manipulador no ambiente Python e permite executar operações como cálculo de cinemática e manipulação do modelo.
 
 \begin{lstlisting}[caption={Definição do robô FRANK}, label={definicao_frank}]
 import numpy as np
@@ -390,7 +390,7 @@ q = [0, -np.pi/4, -np.pi/4, 0, 0]
 robot.plot(q, backend='pyplot', block=True)
 \end{lstlisting}
 
-Esse código constroi a classe do robô FRANK e mostra na tela a tabela \ref{tabela} por meio do comando 'print(robot)' e gera a figura \ref{frank_rtb} com o comando 'robot.plot(q, backend='pyplot', block=True)'.  
+Esse código constroi a classe do robô FRANK e mostra na tela a Tabela \ref{tabela} por meio do comando 'print(robot)' e gera a figura \ref{frank_rtb} com o comando 'robot.plot(q, backend='pyplot', block=True)'.  
 
 \subsection{Cálculos da Jacobiana}
 
