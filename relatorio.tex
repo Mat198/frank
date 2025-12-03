@@ -81,7 +81,7 @@
 Este relatório descreve as atividades realizadas na disciplina Manipulação Robótica com o robô FRANK. Os objetivos principais foram:
 
 \begin{itemize}
-  \item Descrever o manipulador utilizando a notação de Denavit–Hartenberg e teoria helicoidal.
+  \item Descrever o manipulador utilizando a notação de Denavit–Hartenberg e \textit{Screw Theory}.
   \item Determinar e aplicar a cinemática direta e inversa.
   \item Aplicar conceitos de cinemática em tarefas de manipulação (pick and place).
   \item Explorar métodos modernos e técnicas de aprendizagem de máquina aplicadas à manipulação robótica.
@@ -112,15 +112,20 @@ Uma vez definidos os referenciais, os quatro parâmetros DH são estabelecidos:
     \item $\theta_i$: ângulo entre $x_i$ e $x_{i+1}$ ao redor de $z_i$; variável em juntas revolutas.
 \end{itemize}
 
+
 Dados esses parâmetros, a matriz de transformação entre o elo i e i+1 é definida por:
 
-$ \prescript{i}{}{T_{i+1}} $ = 
-$ \begin{bmatrix}
+\[
+\\
+\prescript{i}{}{T_{i+1}} = 
+\begin{bmatrix}
     cos(\theta_{i}) & -sen(\theta_{i})cos(\alpha_{i}) & sen(\theta_{i})sen(\alpha_{i}) & a_{i}cos(\theta_{i}) \\
     sen(\theta_{i}) & cos(\theta_{i})cos(\alpha_{i}) & -cos(\theta_{i})sen(\alpha_{i})  & a_{i}sin(\theta_{i}) \\
     0 & sen(\alpha_{i}) & cos(\alpha_{i})  & d_{i} \\
     0 & 0 & 0 & 1
-\end{bmatrix} $
+\end{bmatrix}
+\\
+\]
 
 
 Multiplicando-se sequencialmente as transformações ${}^{0}T_1$, ${}^{1}T_2$, \ldots, ${}^{n-1}T_n$ é possível obter a transformação completa ${}^{0}T_n$ que relaciona a base ao último elo.
@@ -190,7 +195,7 @@ Em que $z_{i-1}$ é o vetor que define o eixo da junta i-1, $p_{e}$ é a posiç�
 Para a encontrar a velocidade das juntas dada uma velocidade no espaço cartesiano, é preciso utilizar a relação inversa:
 
 \[
-\dot{\mathbf{q}} = J^-(\mathbf{q}) \dot{\mathbf{x}}
+\dot{\mathbf{q}} = J^{-1}(\mathbf{q}) \dot{\mathbf{x}}
 \]
 
 Contudo, o Jacobiano nem sempre será invertível e pode não ser uma matriz quadrada.
@@ -255,49 +260,46 @@ Substituindo a relação inversa do Jacobiano é possível obter:
 
 Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.
 
-\subsection{Screw Theory e Space Vectors}
-
-A teoria de \textit{screws} fornece uma descrição geométrica unificada para movimentos e forças em corpos rígidos. Os elementos centrais utilizados são os \textit{twists}, que representam movimentos instantâneos, e sua forma matricial utilizada para computar exponenciais.
+A teoria de \textit{screws} fornece uma estrutura geométrica elegante e unificada para descrever movimentos de corpos rígidos no espaço tridimensional. Seu elemento fundamental é o \textit{twist}, que representa o movimento instantâneo de um corpo — combinando rotação e translação em uma única entidade matemática.
 
 \subsubsection{Twist de uma Junta de Revolução}
 
-Um \textit{twist} é um vetor de dimensão 6 que descreve a velocidade instantânea de um corpo rígido. Para uma junta de revolução, ele é definido como:
-
+Um \textit{twist} é um vetor de seis dimensões que caracteriza a velocidade instantânea de um corpo rígido. No caso de uma junta de rotação, o twist espacial assume a forma:
 \[
-S = \begin{bmatrix}
+S = 
+\begin{bmatrix}
 \omega \\
 \omega \times q
-\end{bmatrix}
+\end{bmatrix},
 \]
-
-onde $\omega$ é o eixo unitário de rotação e $q$ é um ponto pertencente a esse eixo. Essa forma garante que o movimento representado seja uma rotação em torno da linha definida por $(\omega, q)$.
+onde $\omega$ é um vetor unitário que define a direção do eixo de rotação e $q$ é um ponto pertencente a esse eixo. Essa construção garante que o movimento descrito corresponda a uma rotação em torno da linha determinada por $(\omega, q)$, preservando a geometria do eixo físico da junta.
 
 \subsubsection{Exponencial de um Twist}
 
-A exponencial de um \textit{twist} representa a transformação associada ao movimento da junta:
+A transformação associada ao movimento de uma junta é obtida pela exponencial matricial do twist:
 \[
-e^{[S]\theta}
+e^{[S]\theta}.
 \]
-Para junta de revolução, a exponencial corresponde a uma rotação de ângulo $\theta$ ao longo do eixo $\omega$, acompanhada da translação coerente com a linha do parafuso (\textit{screw axis}). Essa operação é o núcleo do modelo cinemático via expoentes.
+Para uma junta de revolução, essa exponencial descreve uma rotação de ângulo $\theta$ em torno do eixo $\omega$, acompanhada de uma translação que mantém a coerência com a linha do parafuso (\textit{screw axis}). 
 
 \subsubsection{Produto das Exponenciais}
 
-A cinemática direta de um manipulador é descrita pelo produto das exponenciais:
-
+A cinemática direta de um manipulador com $n$ juntas pode ser expressa pelo modelo do Produto das Exponenciais:
 \[
-T(\theta_1, \theta_2, ..., \theta_n) = e^{[S_1]\theta_1}
-            e^{[S_2]\theta_2}
-            \cdots
-            e^{[S_n]\theta_n} \, M_0,
+T(\theta_1, \theta_2, \dots, \theta_n)
+=
+e^{[S_1]\theta_1}
+e^{[S_2]\theta_2}
+\cdots
+e^{[S_n]\theta_n}\, M_0,
 \]
-
-Onde $T(\theta_1, \theta_2, ..., \theta_n)$ é a pose final do end-effector, $e^{[S_i]\theta_i}$ representa o movimento helicoidal da junta $i$ e $M_0$ é a pose do end-effector na configuração inicial de referência. 
+onde cada termo $e^{[S_i]\theta_i}$ representa o movimento helicoidal da junta $i$ e $M_0$ é a pose do end-effector quando todas as juntas estão em sua configuração inicial.
 
 \subsection{Aprendizagem de Máquina}
 
-A aprendizagem de máquina tem sido bastante usada na manipulação robótica moderna, complementando e, em muitos casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos analíticos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos e propriedades físicas difíceis de modelar. 
+Atualmente, métodos de aprendizagem de máquina tem sido bastante usada em manipulação robótica, complementando e, em alguns casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos, ruídos e propriedades físicas difíceis de modelar. 
 
-Redes neurais profundas podem fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos e métodos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que podem não ser bem modelados pelos métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia, adaptabilidade e generalização dos manipuladores.
+Redes neurais profundas podem, por exemplo, fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos. Por outro lado, algoritmos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que não podem ser difíceis de serem modelados pelos métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia e a adaptabilidade dos manipuladores.
 
 \section{Materiais}
 
