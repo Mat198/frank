@@ -117,6 +117,7 @@ Dados esses parâmetros, a matriz de transformação entre o elo i e i+1 é defi
 
 \[
 \\
+\\
 \prescript{i}{}{T_{i+1}} = 
 \begin{bmatrix}
     cos(\theta_{i}) & -sen(\theta_{i})cos(\alpha_{i}) & sen(\theta_{i})sen(\alpha_{i}) & a_{i}cos(\theta_{i}) \\
@@ -124,6 +125,7 @@ Dados esses parâmetros, a matriz de transformação entre o elo i e i+1 é defi
     0 & sen(\alpha_{i}) & cos(\alpha_{i})  & d_{i} \\
     0 & 0 & 0 & 1
 \end{bmatrix}
+\\
 \\
 \]
 
@@ -260,7 +262,9 @@ Substituindo a relação inversa do Jacobiano é possível obter:
 
 Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.
 
-A teoria de \textit{screws} fornece uma estrutura geométrica elegante e unificada para descrever movimentos de corpos rígidos no espaço tridimensional. Seu elemento fundamental é o \textit{twist}, que representa o movimento instantâneo de um corpo — combinando rotação e translação em uma única entidade matemática.
+\subsection{Screw Theory}
+
+A teoria de \textit{screws} fornece uma estrutura geométrica unificada para descrever movimentos de corpos rígidos no espaço tridimensional. Seu elemento fundamental é o \textit{twist}, que representa o movimento instantâneo de um corpo, combinando rotação e translação em uma única entidade matemática.
 
 \subsubsection{Twist de uma Junta de Revolução}
 
