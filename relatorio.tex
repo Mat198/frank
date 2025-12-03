@@ -258,8 +258,7 @@ Substituindo a relação inversa do Jacobiano é possível obter:
 \mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, \mathbf{\dot{v}}_k \, dt
 \].
 
-Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.  
-\subsection{Screw Theory}
+Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.
 
 A teoria de \textit{screws} fornece uma estrutura geométrica elegante e unificada para descrever movimentos de corpos rígidos no espaço tridimensional. Seu elemento fundamental é o \textit{twist}, que representa o movimento instantâneo de um corpo — combinando rotação e translação em uma única entidade matemática.
 
@@ -328,11 +327,22 @@ Para este trabalho, foi utilizado o robô manipulador composto por cinco juntas 
   \footnotesize{Fonte: elaboração dos autores.}
 \end{figure}
 
-A metodologia adotada incluiu a determinação dos parâmetros de Denavit–Hartenberg do manipulador por meio da definição dos sistemas de coordenadas e identificação das medidas necessárias, seguida da implementação do modelo completo do robô na Robotics Toolbox de Peter Corke. Com o modelo definido, foram obtidos os cálculos da Jacobiana e aplicada a cinemática inversa diferencial para relacionar velocidades articulares e do \textit{end-effector}, além da realização da cinemática direta por Screw Theory como abordagem complementar. Também, foi desenvolvido uma simulação de Pick and Place na toolbox, permitindo verificar a coerência entre a modelagem teórica e o desempenho do robô em tarefas de manipulação. Por fim, foi feito um script para gerar dados de trajetória, utilizando a biblioteca, para dada uma pose alvo do end-effector. Esses dados poderão ser utilizados futuramente no treinamento de modelos de aprendizagem de máquina.
+A metodologia adotada incluiu a determinação dos parâmetros de Denavit–Hartenberg do manipulador por meio da definição dos sistemas de coordenadas e identificação das medidas necessárias, seguida da implementação do modelo completo do robô na Robotics Toolbox de Peter Corke. Com o modelo definido, foram obtidos os cálculos da Jacobiana e aplicada a cinemática inversa diferencial para relacionar velocidades articulares e do \textit{end-effector}, além da realização da cinemática direta por Screw Theory como abordagem complementar. Também, foi desenvolvido uma simulação de Pick and Place na toolbox, permitindo verificar a coerência entre a modelagem teórica e o desempenho do robô em tarefas de manipulação. Por fim, a Robotics Toolbox foi utilizada para encontrar a cinemática inversa para um conjunto de poses do end-effector e interpolar trajetórias de modo a construir um dataset que relaciona posição das juntas com posição do punho. Esses dados poderão ser utilizados futuramente no treinamento de modelos de aprendizagem de máquina.
 
 \subsection{Parâmetros de Denavit-Hartenberg}
 
-Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg correspondentes a cada elo e junta do robô. Para isso, adotou-se o procedimento de definição dos sistemas de coordenadas, identificação dos eixos das juntas e medição das distâncias e ângulos necessários. A partir dessas informações, foi construída a tabela de parâmetros de Denavit–Hartenberg (Tabela \ref{tabela}), que serviu como base para a modelagem do manipulador.
+Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg correspondentes a cada elo e junta do robô. Para isso, adotou-se o procedimento de definição dos sistemas de coordenadas, identificação dos eixos das juntas e medição das distâncias e ângulos necessários. Na figura \ref{frank_rtb} é possível observar os eixos definidos para cada uma das 5 juntas.
+
+\begin{figure}[H]
+\centering
+    \caption{\footnotesize{Modelo do robô FRANK no Robotics Toolbox.}}
+    \includegraphics[width=0.8\textwidth]{imagens/frank_rtb.png}
+    \label{frank_rtb}
+    \par       
+    \footnotesize{Fonte: elaboração dos autores.}
+\end{figure}
+
+A partir dessas informações, foi construída a tabela \ref{tabela} com os parâmetros de Denavit–Hartenberg, que serviu como base para a modelagem do manipulador. 
 
 \begin{table}[h!]
     \caption{Parâmetros de Denavit-Hartenberg para o robô FRANK.} \label{tabela} 
@@ -355,10 +365,11 @@ Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg corresp
     \footnotesize{Fonte: elaboração dos autores.}
 \end{table}
 
-
 \subsection{Implementação do Robô em Simulação}
 
 Após a definição dos parâmetros de Denavit-Hartenberg, o modelo completo do robô FRANK foi implementado utilizando a Robotics Toolbox de Peter Corke. Essa ferramenta permitiu representar o manipulador por meio da sequência de elos definidos pela tabela DH, facilitando a validação dos parâmetros obtidos e a realização de simulações.
+
+O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRANK diretamente a partir dos valores numéricos dos parâmetros de Denavit–Hartenberg da tabela \ref{tabela}, utilizando as classes DHLink e DHRobot da Robotics Toolbox. As variáveis $l_i$ definem as características geométricas de um elo, e, ao final, todos são reunidos em um único objeto DHRobot chamado de robot, que representa o manipulador no ambiente Python e permite executar operações como cálculo de cinemática e manipulação do modelo.
 
 \begin{lstlisting}[caption={Definição do robô FRANK}, label={definicao_frank}]
 import numpy as np
@@ -370,18 +381,12 @@ l3 = rtb.DHLink(a=0.8, alpha=0, d=0, offset=0)
 l4 = rtb.DHLink(a=0, alpha=np.pi/2, d=0.0, offset=np.pi/2)
 l5 = rtb.DHLink(a=0, alpha=0, d=0.317, offset=0)
 robot = rtb.DHRobot([l1, l2, l3, l4, l5], name="Frank")
+print(robot)
+q = [0, -np.pi/4, -np.pi/4, 0, 0]
+robot.plot(q, backend='pyplot', block=True)
 \end{lstlisting}
 
-O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRANK diretamente a partir dos valores numéricos dos parâmetros de Denavit–Hartenberg, utilizando as classes DHLink e DHRobot da Robotics Toolbox. Cada linha define as características geométricas de um elo, e, ao final, todos são reunidos em um único objeto DHRobot, que representa o manipulador no ambiente Python e permite executar operações como cálculo de cinemática e manipulação do modelo.
-
-\begin{figure}[H]
-\centering
-    \caption{\footnotesize{Ilustração da simulação do FRANK no Robotics Toolbox.}}
-    \includegraphics[width=0.8\textwidth]{imagens/frank_rtb.png}
-    \label{frank_rtb}
-    \par       
-    \footnotesize{Fonte: elaboração do autor.}
-\end{figure}
+Esse código constroi a classe do robô FRANK e mostra na tela a tabela \ref{tabela} por meio do comando 'print(robot)' e gera a figura \ref{frank_rtb} com o comando 'robot.plot(q, backend='pyplot', block=True)'.  
 
 \subsection{Cálculos da Jacobiana}
 
@@ -389,66 +394,115 @@ Com o modelo estabelecido, foram desenvolvidos os cálculos da Jacobiana do rob�
 
 O cálculo da Jacobiana no Código \ref{jacob_frank} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros das juntas.
 
-Em seguida, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições intermediárias $O_1, O_2, O_3, O_4, O_5$ de cada junta no espaço. Para cada elo, extrai-se também o vetor de direção do eixo da junta ($Z_1$ a $Z_5$), obtido a partir das submatrizes de rotação acumuladas. 
-
-Com as posições $O_i$ e os vetores $Z_i$, o código calcula as colunas da Jacobiana: a parte linear é dada pelo produto vetorial entre o eixo da junta e o vetor que liga a junta ao end-effector, enquanto a parte angular corresponde diretamente aos vetores $Z_i$. Por fim, todas as colunas são reunidas em uma única matriz $J$, que é simplificada simbolicamente e posteriormente avaliada numericamente por meio da substituição dos valores reais.
-
-\begin{lstlisting}[caption={Cálculo de Jacobiana do manipulador.}, label={jacob_frank}]
+\begin{lstlisting}[caption={Definição das variáveis para cálculo de Jacobiana do manipulador.}, label={jacob_frank0}]
 from sympy import *
 import numpy as np
 
 t1, t2, t3, t4, t5 = symbols('theta1 theta2 theta3 theta4 theta5')
 d1, a1, a2, a3, d5 = symbols('d1 a1 a2 a3 d5')
 
-T01 = Matrix([[cos(t1), 0, sin(t1), cos(t1)*a1], [sin(t1), 0, -cos(t1), sin(t1)*a1], [0, 1, 0, d1], [0, 0, 0, 1]])
-T01.subs({t1: np.pi/6, d1: 0.155, a1: 0.287})
+\end{lstlisting}
 
-T12 = Matrix([[-sin(t2), -cos(t2), 0, -sin(t2)*a2], [cos(t2), -sin(t2), 0, cos(t2)*a2], [0, 0, 1, 0], [0, 0, 0, 1]])
-T12.subs({t2: np.pi/6, a2: 0.8})
+Em seguida são definidas as tranformação entre as juntas:
 
-T23 = Matrix([[cos(t3), -sin(t3), 0, cos(t3)*a3], [sin(t3), cos(t3), 0, sin(t3)*a3], [0, 0, 1, 0], [0, 0, 0, 1]])
-T23.subs({t3: np.pi/6, a3: 0.8})
+\begin{lstlisting}[caption={Definição das transformações.}, label={jacob_frank1}]
+T01 = Matrix([
+    [cos(t1),   0,  sin(t1), cos(t1)*a1], 
+    [sin(t1),   0, -cos(t1), sin(t1)*a1], 
+    [      0,   1,        0,         d1], 
+    [      0,   0,        0,          1]])
 
-T34 = Matrix([[-sin(t4), 0, cos(t4), 0], [cos(t4), 0, sin(t4), 0], [0, 1, 0, 0], [0, 0, 0, 1]])
-T34.subs({t4: np.pi/6})
+T12 = Matrix([
+    [-sin(t2), -cos(t2),  0, -sin(t2)*a2],
+    [ cos(t2), -sin(t2),  0,  cos(t2)*a2], 
+    [       0,        0,  1,           0], 
+    [       0,        0,  0,           1]])
 
-T45 = Matrix([[cos(t5), -sin(t5), 0, 0], [sin(t5), cos(t5), 0, 0], [0, 0, 1, d5], [0, 0, 0, 1]])
-T45.subs({t5: np.pi/6, d5: 0.317})
+T23 = Matrix([
+    [cos(t3), -sin(t3),  0, cos(t3)*a3],
+    [sin(t3),  cos(t3),  0, sin(t3)*a3],
+    [      0,        0,  1,          0],
+    [      0,        0,  0,          1]])
+
+T34 = Matrix([
+    [-sin(t4),  0, cos(t4),  0],
+    [ cos(t4),  0, sin(t4),  0],
+    [       0,  1,       0,  0],
+    [       0,  0,       0,  1]])
+
+T45 = Matrix([
+    [cos(t5), -sin(t5),  0,  0],
+    [sin(t5),  cos(t5),  0,  0],
+    [      0,        0,  1, d5],
+    [      0,        0,  0,  1]])
 
 T05 = T01*T12*T23*T34*T45
 T05 = simplify(T05)
 
-O1 = T01 * Matrix ([[0], [0], [0], [1]])
+\end{lstlisting}
+
+Em seguida, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições da origem de cada sistema de coordenadas de cada junta no espaço, $O_1, O_2, O_3, O_4 O_5$.
+
+\begin{lstlisting}[caption={Cálculo do centro das juntas.}, label={jacob_frank2}]
+Origin = Matrix ([[0], [0], [0], [1]])
+O1 = T01 * Origin
 O1 = O1[0:3, :]
-O1.subs({t1: np.pi/6, d1: 0.155, a1: 0.287})
-
-O2 = T01* T12 * Matrix ([[0], [0], [0], [1]])
+O2 = T01* T12 * Origin
 O2 = simplify(O2[0:3, :])
-O2.subs({t1: np.pi/6, t2: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8})
-
-O3 = T01* T12 * T23 * Matrix ([[0], [0], [0], [1]])
+O3 = T01* T12 * T23 * Origin
 O3 = simplify(O3[0:3, :])
-O3.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8})
-
-O4 = T01* T12 * T23 * T34 * Matrix ([[0], [0], [0], [1]])
+O4 = T01* T12 * T23 * T34 * Origin
 O4 = simplify(O4[0:3, :])
-O4.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8})
-
-O5 = T01* T12 * T23 * T34 * T45 * Matrix ([[0], [0], [0], [1]])
+O5 = T01* T12 * T23 * T34 * T45 * Origin
 O5 = simplify(O5[0:3, :])
-O5.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
+\end{lstlisting}
 
-Z1 = Matrix ([[0], [0], [1],])
+A figura \ref{origins} mostra a origem dos eixos em sequencia da esqueda para a direita e de cima para baixo:
 
-Z2 = T01[0:3, 0:3] * Matrix ([[0], [0], [1]])
+\begin{figure}[htb]
+ \caption{Origem dos eixos das juntas no sistema de coordenadas da base.} \label{origins}  
+ \centering
+  \begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{imagens/origins1.png}
+  \end{subfigure} 
 
-Z3 = T01[0:3, 0:3] * T12[0:3, 0:3] * Matrix ([[0], [0], [1]])
+  \bigskip
 
-Z4 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * Matrix ([[0], [0], [1]])
+  \begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{imagens/origins2.png}
+  \end{subfigure} 
+  \par
+  \footnotesize{Fonte: elaboração dos autores.}
+\end{figure}
 
-Z5 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * T34[0:3, 0:3] * Matrix ([[0], [0], [1]])
+Para cada elo, extrai-se também o vetor de direção do eixo da junta de $Z_1$ até $Z_5$, obtidos aplicando as matrizes de rotação nos eixos subsequentes. 
+
+\begin{lstlisting}[caption={Cálculo do eixo das juntas.}, label={jacob_frank3}]
+ZAxis = Matrix ([[0], [0], [1]])
+Z1 = ZAxis
+Z2 = T01[0:3, 0:3] * ZAxis
+Z3 = T01[0:3, 0:3] * T12[0:3, 0:3] * ZAxis
+Z4 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * ZAxis
+Z5 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * T34[0:3, 0:3] * ZAxis
 Z5 = simplify(Z5)
+\end{lstlisting}
 
+A figura \ref{axis} mostra os eixos de cada junta em relação ao sistema de coordenadas da base:
+
+\begin{figure}[H]
+\centering
+    \caption{\footnotesize{Eixos das juntas em relação ao sistema de coordenadas da base.}}
+    \includegraphics[width=1.0\textwidth]{imagens/z_axis.png}
+    \label{frank_rtb}
+    \par       
+    \footnotesize{Fonte: elaboração dos autores.}
+\end{figure}
+
+Com as posições $O_i$ e os vetores $Z_i$, o código calcula as colunas da Jacobiana: a parte linear é dada pelo produto vetorial entre o eixo da junta e o vetor que liga a junta ao end-effector, enquanto a parte angular corresponde diretamente aos vetores $Z_i$. Por fim, todas as colunas são reunidas em uma única matriz $J$, que é simplificada simbolicamente e posteriormente avaliada numericamente por meio da substituição dos valores reais. O resultado foi comparado com o que é obtido numericamente pela Robotics Toolbox.
+
+\begin{lstlisting}[caption={Calculo das componentes do Jacobiano.}, label={jacob_frank3}]
 JV1 = Z1.cross(O5)
 JW1 = Z1
 
@@ -464,8 +518,9 @@ JW4 = Z4
 JV5 = simplify(Z5.cross(O5 - O4))
 JW5 = Z5
 
-J = simplify(Matrix([[JV1, JV2, JV3, JV4, JV5], [JW1, JW2, JW3, JW4, JW5]]))
-J.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
+J = simplify(Matrix([
+    [JV1, JV2, JV3, JV4, JV5], 
+    [JW1, JW2, JW3, JW4, JW5]]))
 \end{lstlisting}
 
 A matriz Jacobiana obtida a partir do desenvolvimento simbólico das transformações homogêneas e dos vetores de posição e orientação das juntas resulta na seguinte expressão:
@@ -544,7 +599,6 @@ Em cada iteração, a função \texttt{jacobian\_ik} é chamada para obter a Jac
 
 Após cada atualização, o código recalcula a pose do robô e verifica se a posição e a orientação estão suficientemente próximas dos valores desejados. Caso o erro permaneça acima do limite admissível, uma nova iteração é realizada com o erro de posição atualizado, refinando progressivamente o movimento. O processo continua até que se atinja a convergência ou que o número máximo de iterações seja alcançado, resultando na configuração de juntas que melhor aproxima a pose final especificada.
 
-
 \begin{lstlisting}[caption={Cinemática inversa diferencial}, label={dif_ik}]
 import numpy as np
 import roboticstoolbox as rtb
@@ -563,7 +617,6 @@ def differential_ik(robot: rtb.DHRobot, qi, final_pos, final_ori):
         qn = jacobian_ik(robot, qi, lin_vel=lin_vel, ang_vel=ang_vel, dt=0.1)
         curr_pos = robot.fkine(qn)
         print(f"Position on iteration {i}: {[format(i, '.3f') for i in curr_pos.t]}")
-        print(f"Orientation on iteration {i}: {[format(i, '.3f') for i in curr_pos.rpy()]}")
 
         reached_pos = np.allclose(final_pos, curr_pos.t,atol=1e-3)
         reached_angle = np.allclose(final_ori, curr_pos.rpy(),atol=1e-3)
@@ -585,7 +638,47 @@ def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
     return nq
 \end{lstlisting}
 
-% TODO: Acho que vale a pena falar que essa solução, apesar de funcionar, não converge muito bem por conta de singularidades, etc.
+Para posições próximas de singularidades a solução não apresenta uma boa convergência e para um pequeno deslocamento linear um grande deslocamento das juntas é produzido. Técnicas de otimização podem ser aplicadas para solucionar esse problema como adicionar restrições de velocidade, posição e aceleração. Na implementação proposta no código \ref{dif_ik} o termo da velocidade angular foi omitido para melhorar a convergência do método.
+
+Para uma movimentaçaõ da posição (1.6527 -0.0000 0.4037) para a posição (1.2, 0.4, 0.5) a cinemática inversa converge após 27 iterações como mostrado nos logs abaixo:
+
+\begin{lstlisting}[label={dif_ik}]
+Initial position: [1.6527 -0.0000 0.4037]
+Initial orientation: [3.1416 -0.0000 -0.0000]
+Final position: [1.2, 0.4, 0.5]
+Final orientation: [3.141592653589793, 0, 0]
+Linear Velocity: [-0.9053708498984765, 0.8, 0.19262915010152393]
+Angular Velocity: [0, 0, 0]
+Position on iteration 0: ['1.550', '0.075', '0.415']
+Position on iteration 1: ['1.476', '0.137', '0.429']
+Position on iteration 2: ['1.419', '0.187', '0.442']
+Position on iteration 3: ['1.374', '0.228', '0.452']
+Position on iteration 4: ['1.339', '0.262', '0.461']
+Position on iteration 5: ['1.311', '0.289', '0.469']
+Position on iteration 6: ['1.288', '0.311', '0.475']
+Position on iteration 7: ['1.270', '0.328', '0.480']
+Position on iteration 8: ['1.256', '0.342', '0.484']
+Position on iteration 9: ['1.245', '0.354', '0.487']
+Position on iteration 10: ['1.236', '0.363', '0.490']
+Position on iteration 11: ['1.229', '0.370', '0.492']
+Position on iteration 12: ['1.223', '0.376', '0.493']
+Position on iteration 13: ['1.218', '0.381', '0.495']
+Position on iteration 14: ['1.215', '0.385', '0.496']
+Position on iteration 15: ['1.212', '0.388', '0.497']
+Position on iteration 16: ['1.209', '0.390', '0.497']
+Position on iteration 17: ['1.208', '0.392', '0.498']
+Position on iteration 18: ['1.206', '0.394', '0.498']
+Position on iteration 19: ['1.205', '0.395', '0.499']
+Position on iteration 20: ['1.204', '0.396', '0.499']
+Position on iteration 21: ['1.203', '0.397', '0.499']
+Position on iteration 22: ['1.202', '0.397', '0.499']
+Position on iteration 23: ['1.202', '0.398', '0.499']
+Position on iteration 24: ['1.202', '0.398', '0.500']
+Position on iteration 25: ['1.201', '0.399', '0.500']
+Position on iteration 26: ['1.201', '0.399', '0.500']
+Position on iteration 27: ['1.201', '0.399', '0.500']
+Final IK position is:  [0.3209 -0.2358 -1.4807 -1.4252 0.3209]
+\end{lstlisting}
 
 \subsection{Cinemática com Screw Theory}
 
