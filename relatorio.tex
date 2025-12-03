@@ -396,7 +396,7 @@ Esse código constroi a classe do robô FRANK e mostra na tela a Tabela \ref{tab
 
 Com o modelo estabelecido, foram desenvolvidos os cálculos da Jacobiana do robô FRANK. A matriz Jacobiana foi posteriormente utilizada nos cálculo da cinemática inversa diferencial, permitindo relacionar velocidades do end-effector com velocidades das juntas.
 
-O cálculo da Jacobiana no Código \ref{jacob_frank} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros das juntas.
+O cálculo da Jacobiana no Código \ref{jacob_frank0} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros das juntas.
 
 \begin{lstlisting}[caption={Definição das variáveis para cálculo de Jacobiana do manipulador.}, label={jacob_frank0}]
 from sympy import *
