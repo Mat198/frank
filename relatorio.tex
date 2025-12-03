@@ -445,7 +445,7 @@ T05 = simplify(T05)
 
 \end{lstlisting}
 
-Em seguida, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições da origem de cada sistema de coordenadas de cada junta no espaço, $O_1, O_2, O_3, O_4 O_5$.
+Então, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições da origem de cada sistema de coordenadas de cada junta no espaço, $O_1, O_2, O_3, O_4, O_5$.
 
 \begin{lstlisting}[caption={Cálculo do centro das juntas.}, label={jacob_frank2}]
 Origin = Matrix ([[0], [0], [0], [1]])
@@ -493,7 +493,7 @@ Z5 = T01[0:3, 0:3] * T12[0:3, 0:3] * T23[0:3, 0:3] * T34[0:3, 0:3] * ZAxis
 Z5 = simplify(Z5)
 \end{lstlisting}
 
-A figura \ref{axis} mostra os eixos de cada junta em relação ao sistema de coordenadas da base:
+A Figura \ref{frank_rtb} mostra os eixos de cada junta em relação ao sistema de coordenadas da base:
 
 \begin{figure}[H]
 \centering
@@ -597,13 +597,13 @@ Essa notação foi usada para tornar equações de cinemática mais legíveis, e
 
 A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e das juntas, através da matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta os valores articulares passo a passo a partir do erro entre a pose atual e a pose final.
 
-O Código \ref{dif_ik} implementa a cinemática inversa diferencial ao iterativamente ajustar as juntas de acordo com o erro entre a pose atual e a pose desejada do end-effector. O procedimento inicia com o cálculo da posição e orientação associadas à configuração inicial, a partir da qual são definidas velocidades lineares proporcionais ao erro de posição. Essas velocidades servem como referência para o processo iterativo.
+O Código \ref{diff_ik} implementa a cinemática inversa diferencial ao iterativamente ajustar as juntas de acordo com o erro entre a pose atual e a pose desejada do end-effector. O procedimento inicia com o cálculo da posição e orientação associadas à configuração inicial, a partir da qual são definidas velocidades lineares proporcionais ao erro de posição. Essas velocidades servem como referência para o processo iterativo.
 
 Em cada iteração, a função \texttt{jacobian\_ik} é chamada para obter a Jacobiana na configuração corrente e montar o vetor de velocidades cartesianas, combinando componentes lineares e angulares. Em seguida, calcula-se a pseudoinversa da Jacobiana para determinar as velocidades articulares que melhor realizam o movimento desejado no espaço cartesiano. As juntas são então atualizadas pela integração dessas velocidades ao longo de um pequeno intervalo de tempo.
 
 Após cada atualização, o código recalcula a pose do robô e verifica se a posição e a orientação estão suficientemente próximas dos valores desejados. Caso o erro permaneça acima do limite admissível, uma nova iteração é realizada com o erro de posição atualizado, refinando progressivamente o movimento. O processo continua até que se atinja a convergência ou que o número máximo de iterações seja alcançado, resultando na configuração de juntas que melhor aproxima a pose final especificada.
 
-\begin{lstlisting}[caption={Cinemática inversa diferencial}, label={dif_ik}]
+\begin{lstlisting}[caption={Cinemática inversa diferencial}, label={diff_ik}]
 import numpy as np
 import roboticstoolbox as rtb
 
@@ -642,7 +642,7 @@ def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
     return nq
 \end{lstlisting}
 
-Para posições próximas de singularidades a solução não apresenta uma boa convergência e para um pequeno deslocamento linear um grande deslocamento das juntas é produzido. Técnicas de otimização podem ser aplicadas para solucionar esse problema como adicionar restrições de velocidade, posição e aceleração. Na implementação proposta no código \ref{dif_ik} o termo da velocidade angular foi omitido para melhorar a convergência do método.
+Para posições próximas de singularidades a solução não apresenta uma boa convergência e para um pequeno deslocamento linear um grande deslocamento das juntas é produzido. Técnicas de otimização podem ser aplicadas para solucionar esse problema como adicionar restrições de velocidade, posição e aceleração. Na implementação proposta no Código \ref{diff_ik} o termo da velocidade angular foi omitido para melhorar a convergência do método.
 
 Para uma movimentaçaõ da posição (1.6527 -0.0000 0.4037) para a posição (1.2, 0.4, 0.5) a cinemática inversa converge após 27 iterações como mostrado nos logs abaixo:
 
@@ -785,7 +785,7 @@ T(\theta_1, \theta_2, \theta_3, \theta_4, \theta_5) = e^{[s_1] \theta_1} e^{[s_2
 
 Para efetuar essa operação é preciso converter o vetor 6D para uma matriz de transforamação homogênea. A porção rotacional da matriz é dada pela matriz antissimétrica da porção angular do screw e a tranlação é dada pela porção linear no screw conforme inplementado na função '$twist\_to\_matrix$'.
 
-O código \ref{screw_ik} abaixo fornece a implementação completa seguindo os passos descritos anteriormente.
+O Código \ref{screw_ik} abaixo fornece a implementação completa seguindo os passos descritos anteriormente.
 
 \begin{lstlisting}[caption={Cinemática com Screw Theory}, label={screw_ik}]
 import numpy as np 
