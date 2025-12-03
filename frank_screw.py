@@ -28,14 +28,14 @@ def twist_to_matrix(S):
 # Matriz da posição do efetuador com as juntas iguais a 0
 M = np.matrix([[-1, 0, 0, 0.287], [0, -1, 0, 0], [0, 0, 1, 2.072], [0, 0, 0, 1]])
 
-# Ponto arbitrário em cada junta. Escolhido na origem do DH
+# Ponto arbitrário em cada junta. Escolhido na origem do DH com ângulo de juntas igual a 0
 a1 = np.matrix([0, 0, 0])
 a2 = np.matrix([0.287, 0, 0.155])
 a3 = np.matrix([0.287, 0, 0.955])
 a4 = np.matrix([0.287, 0, 1.755])
 a5 = np.matrix([0.287, 0, 2.072])
 
-# Screw de rotação
+# Screw de rotação - segue os mesmos eixos definidos no DH
 Sw1 = np.matrix([0, 0, 1])
 Sw2 = np.matrix([0, -1, 0])
 Sw3 = np.matrix([0, -1, 0])

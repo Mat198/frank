@@ -686,11 +686,109 @@ Final IK position is:  [0.3209 -0.2358 -1.4807 -1.4252 0.3209]
 
 \subsection{Cinemática com Screw Theory}
 
-Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. 
+Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. Para isso, primeiramente o robô foi movido para a posição em que todas as juntas são 0 conforme a figura \ref{zero_position}. Nessa posição foram definidos os sistemas de coordenadas da base e do ferramenta além dos eixos de screw $s_n$.
+
+\begin{figure}[H]
+\centering
+    \caption{\footnotesize{FRANK na posição zero com eixos de screw.}}
+    \includegraphics[width=1.0\textwidth]{imagens/frank_screw.png}
+    \label{zero_position}
+    \par       
+    \footnotesize{Fonte: elaboração dos autores.}
+\end{figure}
+
+Nessa posição foi definida a matriz M que tem a transformação da base até a origem do sistema de coordenadas da ferramenta. Essa transformação foi calculada usando as dimensões conhecidas do manipulador.
+
+\[
+M =
+\begin{bmatrix}
+    -1 &  0 & 0 & 0.287 \\
+     0 & -1 & 0 &     0 \\
+     0 &  0 & 1 & 2.072 \\ 
+     0 &  0 & 0 &     1 
+\end{bmatrix}
+\]
+
+Em seguida foram calculadas a posição de pontos arbitrários $a_n$ no eixo das juntas na posição zero. Foram escolhidos os pontos definidos como o centro do sistema de coordenadas utilizados na notação de Denavit Hartenberg por conveniencia.
+
+\[
+a_1 =
+\begin{bmatrix} 0 \\ 0 \\ 0 \\
+\end{bmatrix}, \
+a_2 = 
+\begin{bmatrix} 0.287 \\ 0 \\ 0.155 \\
+\end{bmatrix},\ 
+a_3 = 
+\begin{bmatrix} 0.287 \\ 0 \\ 0.955 \\
+\end{bmatrix}, \
+a_4 = 
+\begin{bmatrix} 0.287 \\ 0 \\ 1.755 \\
+\end{bmatrix}, \
+a_5 = 
+\begin{bmatrix} 0.287 \\ 0 \\ 2.072 \\
+\end{bmatrix}. \
+\]
+
+Em seguida foram calculados os eixos de screw $s_n$ expressos no sistema de coordenadas da base do robô. Primeiramente é calculada a parte angular do screw, $s_{\omega n}$. Como se tratam de juntas rotacionais, basta apenas escrever o eixo da junta no sistema de coordenadas da base.
+
+\[
+s_{\omega 1} =
+\begin{bmatrix} 0 \\ 0 \\ 1 \\
+\end{bmatrix}, \
+s_{\omega 2} = 
+\begin{bmatrix} 0 \\ -1 \\ 0 \\
+\end{bmatrix}, \
+s_{\omega 3} = 
+\begin{bmatrix} 0 \\ -1 \\ 0 \\
+\end{bmatrix}, \
+s_{\omega 4} = 
+\begin{bmatrix} 0 \\ -1 \\ 0 \\
+\end{bmatrix}, \
+s_{\omega 5} = 
+\begin{bmatrix} 0 \\ 0 \\ 1 \\
+\end{bmatrix}. \
+\]
+
+A parte linear do screw pode ser encontrada usando a equação $S_{vn} = S_{\omega n} \times a_n$: 
+
+\[
+s_{v1} =
+\begin{bmatrix} 0 \\ 0 \\ 0 \\
+\end{bmatrix}, \
+s_{v2} = 
+\begin{bmatrix} 0.155 \\ 0 \\ -0.287 \\
+\end{bmatrix}, \
+s_{v3} = 
+\begin{bmatrix} 0.955 \\ 0 \\ -0.287 \\
+\end{bmatrix}, \
+s_{v4} = 
+\begin{bmatrix} 1.755 \\ 0 \\ -0.287 \\
+\end{bmatrix}, \
+s_{v5} = 
+\begin{bmatrix} 0 \\ -0.287 \\ 0 \\
+\end{bmatrix}. \
+\]
+
+O eixo de screw é obtido concatenando a porção angular e linear:
+
+\[
+s_{vn} =
+\begin{bmatrix} s_{\omega n} \\  s_{vn} \\
+\end{bmatrix}. \
+\]
+
+A tranformação é dado então por:
+
+\[
+T(\theta_1, \theta_2, \theta_3, \theta_4, \theta_5) = e^{[s_1] \theta_1} e^{[s_2] \theta_2} e^{[s_3] \theta_3} e^{[s_4] \theta_4} e^{[s_5] \theta_5} 
+\]
+
+Para efetuar essa operação é preciso converter o vetor 6D para uma matriz de transforamação homogênea. A porção rotacional da matriz é dada pela matriz antissimétrica da porção angular do screw e a tranlação é dada pela porção linear no screw conforme inplementado na função '$twist\_to\_matrix$'.
+
+O código \ref{screw_ik} abaixo fornece a implementação completa seguindo os passos descritos anteriormente.
 
 \begin{lstlisting}[caption={Cinemática com Screw Theory}, label={screw_ik}]
-
-    import numpy as np 
+import numpy as np 
 from scipy.linalg import expm
 
 def to_skew_symmetric(omega):
@@ -716,7 +814,11 @@ def twist_to_matrix(S):
     
     return S_matrix
 
-M = np.matrix([[-1, 0, 0, 0.287], [0, -1, 0, 0], [0, 0, 1, 2.072], [0, 0, 0, 1]])
+M = np.matrix([
+    [-1,  0, 0, 0.287],
+    [ 0, -1, 0,     0], 
+    [ 0,  0, 1, 2.072], 
+    [ 0,  0, 0,     1]])
 
 a1 = np.matrix([0, 0, 0])
 a2 = np.matrix([0.287, 0, 0.155])
@@ -730,39 +832,17 @@ Sw3 = np.matrix([0, -1, 0])
 Sw4 = np.matrix([0, -1, 0])
 Sw5 = np.matrix([0, 0, 1])
 
-print(Sw1)
-print(Sw2)
-print(Sw3)
-print(Sw4)
-print(Sw5)
-print("")
-
 Sv1 = -np.cross(Sw1, a1)
 Sv2 = -np.cross(Sw2, a2)
 Sv3 = -np.cross(Sw3, a3)
 Sv4 = -np.cross(Sw4, a4)
 Sv5 = -np.cross(Sw5, a5)
 
-print(Sv1)
-print(Sv2)
-print(Sv3)
-print(Sv4)
-print(Sv5)
-print("")
-
 S1 = np.concatenate((Sw1, Sv1), axis=1)
 S2 = np.concatenate((Sw2, Sv2), axis=1)
 S3 = np.concatenate((Sw3, Sv3), axis=1)
 S4 = np.concatenate((Sw4, Sv4), axis=1)
 S5 = np.concatenate((Sw5, Sv5), axis=1)
-
-print("Screws: ")
-print(S1)
-print(S2)
-print(S3)
-print(S4)
-print(S5)
-print("")
 
 theta1 = 0
 theta2 = -np.pi/4
@@ -776,20 +856,24 @@ T3 = expm(twist_to_matrix(S3) * theta3)
 T4 = expm(twist_to_matrix(S4) * theta4)
 T5 = expm(twist_to_matrix(S5) * theta5)
 
-print("Exponenciais: ")
-print(T1)
-print(T2)
-print(T3)
-print(T4)
-print(T5)
-print("")
-
 T = T1 @ T2 @ T3 @ T4 @ T5 @ M
 
 float_formatter = "{:.3f}".format
 np.set_printoptions(formatter={'float_kind': float_formatter})
 print(T)
 \end{lstlisting}
+
+A transformação obtida T é identica ao resultado utilizando a Robotics Toolbox para os ângulos de (0, -$\pi / 4$, -$\pi/4$, 0 , 0) que correspondem a posição inicial do FRANK.
+
+\[
+T =
+\begin{bmatrix}
+  0 &  0 & 1 & 1.970 \\
+  0 & -1 & 0 & 0 \\
+  1 &  0 & 1 & 0.721 \\
+  0 &  0 & 0 & 1
+\end{bmatrix}. \
+\]
 
 \subsection{Algoritmo de Pick and Place}
 
