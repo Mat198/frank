@@ -60,3 +60,5 @@
 **/.vscode/.latex-workshop
 **/.vscode/latex-workshop-cache
 latex-workshop-cache/
+
+*.pyc

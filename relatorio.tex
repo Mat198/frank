@@ -13,6 +13,7 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{mathtools}
 
 \renewcommand{\lstlistingname}{Código}
 
@@ -82,18 +83,17 @@ Este relatório descreve as atividades realizadas na disciplina Manipulação Ro
 \begin{itemize}
   \item Descrever o manipulador utilizando a notação de Denavit–Hartenberg e teoria helicoidal.
   \item Determinar e aplicar a cinemática direta e inversa.
-  \item Aplicar conceitos de cinemática a tarefas de manipulação (pick and place).
+  \item Aplicar conceitos de cinemática em tarefas de manipulação (pick and place).
   \item Explorar métodos modernos e técnicas de aprendizagem de máquina aplicadas à manipulação robótica.
 \end{itemize}
 
 \section{Introdução}
 
-\subsection{Notação de
-Denavit-Hartenberg}
+\subsection{Notação de Denavit-Hartenberg}
 
 A notação de Denavit--Hartenberg (DH) é uma convenção amplamente utilizada para descrever a geometria de manipuladores robóticos com apenas quatro parâmetros por junta. Seu objetivo é padronizar a forma de posicionar e orientar sistemas de coordenadas ao longo da cadeia cinemática com um número mínimo de parâmetros. A partir dessa convenção, a obtenção da cinemática direta torna-se simples e permite a compatibilidade com algoritmos computacionais já implementados.
 
-O procedimento consiste em associar um referencial a cada junta e definir quatro parâmetros que descrevem de maneira mínima a transformação entre dois elos consecutivos. Esses parâmetros, conhecidos como $a_i$, $\alpha_i$, $d_i$ e $\theta_i$, caracterizam as operações de rotação e translação necessárias para ir do frame $i$ ao frame $i+1$. O método estabelece regras específicas para posicionar os eixos $z_i$ e $x_i$.
+O procedimento consiste em associar um referencial a cada junta e definir quatro parâmetros que descrevem de maneira mínima a transformação entre dois elos consecutivos. Esses parâmetros, conhecidos como comprimento de elo ($a_i$), torção de elo ($\alpha_i$), distância entre elo ($d_i$) e ângulo de junta ($\theta_i$), caracterizam as operações de rotação e translação necessárias para ir do frame $i$ ao frame $i+1$. O método estabelece regras específicas para posicionar os eixos $z_i$ e $x_i$.
 
 A definição dos parâmetros segue os passos a seguir:
 
@@ -112,70 +112,56 @@ Uma vez definidos os referenciais, os quatro parâmetros DH são estabelecidos:
     \item $\theta_i$: ângulo entre $x_i$ e $x_{i+1}$ ao redor de $z_i$; variável em juntas revolutas.
 \end{itemize}
 
-Dados esses parâmetros, a matriz de transformação entreo elo i e i+1 é definida por:
-// TODO: Adicionar matriz da transformação entre os elos
+Dados esses parâmetros, a matriz de transformação entre o elo i e i+1 é definida por:
+
+$ \prescript{i}{}{T_{i+1}} $ = 
+$ \begin{bmatrix}
+    cos(\theta_{i}) & -sen(\theta_{i})cos(\alpha_{i}) & sen(\theta_{i})sen(\alpha_{i}) & a_{i}cos(\theta_{i}) \\
+    sen(\theta_{i}) & cos(\theta_{i})cos(\alpha_{i}) & -cos(\theta_{i})sen(\alpha_{i})  & a_{i}sin(\theta_{i}) \\
+    0 & sen(\alpha_{i}) & cos(\alpha_{i})  & d_{i} \\
+    0 & 0 & 0 & 1
+\end{bmatrix} $
 
 
 Multiplicando-se sequencialmente as transformações ${}^{0}T_1$, ${}^{1}T_2$, \ldots, ${}^{n-1}T_n$ é possível obter a transformação completa ${}^{0}T_n$ que relaciona a base ao último elo.
 
 \subsection{Cinemática Direta}
 
-A cinemática direta trata do problema de determinar a posição e a orientação da extremidade operacional (end-effector) ou punho de um manipulador robótico a partir da posição das juntas.
+A cinemática direta trata do problema de determinar a posição e a orientação da extremidade operacional (end-effector) ou punho de um manipulador robótico a partir da posição das juntas. O que é equivalente ao mapeamento entre o espaço das juntas e o espaço cartesiano.
 
 Os manipuladores robóticos são compostos por elos conectados por juntas, formando uma cadeia cinemática aberta. Para descrever matematicamente essa cadeia, utiliza-se uma sequência de sistemas de coordenadas ligados a cada elo, relacionados uns aos outros por transformações homogêneas. Um método amplamente utilizado para essa parametrização é o modelo de Denavit--Hartenberg (DH), como mostrado anteriormente. A transformação homogênea de cada elo para o próximo pode ser escrita genericamente como
 \[
-T_i(q_i) =
+\prescript{i-1}{}{T_i(q_i)} =
 \begin{bmatrix}
-R_i(q_i) & p_i(q_i) \\
+\prescript{i-1}{}{R_i(q_i)} & \prescript{i-1}{}{p_i(q_i)} \\
 0 & 1
 \end{bmatrix},
 \]
-onde $R_i$ representa a rotação associada à junta e à orientação relativa entre elos, enquanto $p_i$ representa a translação decorrente do comprimento e deslocamento do elo. 
+onde $R_i$ representa a rotação entre os sistemas de coordenadas das juntas, enquanto $p_i$ representa a translação. 
 
 A composição dessas transformações sucessivas leva à matriz de transformação total entre a base do robô e o end-effector,
 \[
-T(\mathbf{q}) = T_1(q_1)\, T_2(q_2)\, \cdots\, T_n(q_n),
+\prescript{0}{}{T_n}(\mathbf{q}) = \prescript{0}{}{T_1}(q_1)\, \prescript{1}{}{T_2}(q_2)\, \cdots\, \prescript{n-1}{}{T_n}(q_n),
 \]
-que encapsula toda a contribuição geométrica das juntas. A partir dessa matriz final, extrai-se diretamente a posição do efetuador, podendo ser representadas em diversos formatos, como ângulos de Euler ou quaternions. 
-
-Em robôs com muitos graus de liberdade, a cinemática direta também permite avaliar propriedades importantes, como alcance, zonas de operação e possíveis colisões entre elos. Ainda, é um componente essencial na construção de modelos cinemáticos diferenciáveis necessários para o cálculo da Jacobiana, que por sua vez será usada na cinemática inversa e no controle baseado em velocidade. 
-
-A cinemática direta fornece o mapeamento fundamental entre o espaço interno do robô (variáveis de junta) e o espaço externo de atuação (pose do end-effector). Apesar de sua forma relativamente simples, ela estabelece toda a estrutura geométrica necessária para resolver problemas posteriores de planejamento, controle e interação com o ambiente.
-
+que encapsula toda a contribuição geométrica das juntas. A partir dessa matriz final, extrai-se a pose do efetuador. A cinemática direta também permite avaliar propriedades importantes, como alcance, zonas de operação e possíveis colisões entre elos.
 
 \subsection{Cinemática Inversa}
 
-A cinemática inversa aborda o problema complementar ao da cinemática direta: dada uma pose desejada para o end-effector, determinar quais valores de junta o manipulador deve assumir para alcançá-la. Esse problema é central em qualquer tarefa de manipulação, pois normalmente os comandos humanos ou de alto nível são especificados no espaço cartesiano. Transformar essas metas espaciais em ângulos ou deslocamentos de junta é, portanto, essencial para a execução prática do movimento. Contudo, diferentemente da cinemática direta, a cinemática inversa pode apresentar múltiplas soluções, nenhuma solução ou soluções não triviais, especialmente em robôs com redundâncias ou com restrições geométricas. 
+A cinemática inversa aborda o problema oposto ao da cinemática direta: dada uma pose desejada para o punho, determinar quais valores de junta o manipulador deve assumir para alcançá-la. Esse problema é central em qualquer tarefa de manipulação, pois normalmente os comandos humanos ou de alto nível são especificados no espaço cartesiano. Transformar essas metas espaciais em ângulos ou deslocamentos de junta é, portanto, essencial para a execução prática do movimento. 
 
-Para manipuladores simples, especialmente aqueles com poucos graus de liberdade ou estrutura geométrica particular (como braços planares), é possível derivar soluções analíticas fechadas. Porém, para manipuladores industriais modernos, robôs humanoides ou braços redundantes, soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear entre juntas e orientação do end-effector.
+A cinemática inversa, ao contrário da cinemática direta, pode apresentar múltiplas soluções, nenhuma solução ou soluções não triviais, especialmente em robôs com redundâncias ou com restrições geométricas. Todos os sistemas com até 6 graus de liberdade compostos por juntas rotacionais ou prismáticas em uma única cadeia em série são solucionáveis. 
 
-Por essa razão, métodos numéricos, como os métodos baseados em Jacobianos são amplamente utilizados. A ideia fundamental é aproximar o comportamento local do manipulador por meio da Jacobiana, que relaciona pequenas variações de posição e orientação do end-effector com pequenas variações nas juntas. 
+Para manipuladores com até 4 graus de liberdade ou estrutura geométrica particular é possível derivar soluções analíticas fechadas. Se 3 eixos consecutivos se cruzam em um ponto, ou são paralelos, é possível aplicar a solução de Pieper para obter uma solução fechada para manipuladores de 6 graus de liberdade. Porém, para manipuladores com mais de 6 graus de liberdade vão existir múltiplas soluções e soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear e métodos numéricos são utilizados.
 
-Dado um erro cartesiano atual
-\[
-e = x_d - f(\mathbf{q}),
-\]
-podemos corrigi-lo iterativamente utilizando a atualização
-\[
-\mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, e,
-\]
-onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja próximo de uma singularidade. 
+\subsection{Jacobiano, Cinemática Diferencial e Controle}
 
-Apesar de eficaz, o método numérico tem limitações. Próximo a singularidades, a Jacobiana se torna mal condicionada, levando a movimentos exagerados ou instáveis nas juntas. Além disso, o método numérico necessita de uma boa inicialização, caso contrário pode convergir para uma solução indesejada ou ficar preso em mínimos locais.
-
-Portanto, a cinemática inversa é um dos problemas centrais da manipulação robótica, pois traduz objetivos no espaço cartesiano para comandos executáveis pelo robô. Embora soluções analíticas sejam elegantes e eficientes quando disponíveis, a complexidade dos manipuladores modernos normalmente requer o uso de métodos numéricos, como os baseados em Jacobianos.
-
-\subsection{Jacobiana, Cinemática Diferencial e Controle}
-
-A Jacobiana é uma ferramenta central no estudo e controle de manipuladores robóticos, pois estabelece a relação diferencial entre o movimento das juntas e o movimento cartesiano do end-effector. Enquanto a cinemática direta determina a pose a partir das configurações articulares, a Jacobiana descreve como variações infinitesimais nas juntas produzem velocidades lineares e angulares no efetuador. Essa relação é fundamental para tarefas como cinemática inversa diferencial, controle de velocidade, controle de força e análise de singularidades, traduzindo a estrutura geométrica e as capacidades de movimento do manipulador.
-
-A relação fundamental é dada por:
+O Jacobiano é uma ferramenta central no estudo e controle de manipuladores robóticos, pois estabelece a relação entre velocidade no espaço cartesiano e no espaço das juntas dada por:
 
 \[
 \dot{\mathbf{x}} = J(\mathbf{q}) \, \dot{\mathbf{q}},
 \]
 
-Onde $\dot{\mathbf{x}}$ representa a velocidade cartesiana, $\dot{\mathbf{q}}$ o vetor de velocidades articulares e $J(\mathbf{q})$ a Jacobiana avaliada na configuração atual. Cada coluna de $J$ indica como a velocidade de uma junta influencia diretamente o movimento do end-effector. A Jacobiana pode ser particionada como:
+Onde $\dot{\mathbf{x}}$ representa a velocidade cartesiana, $\dot{\mathbf{q}}$ o vetor de velocidades das juntas e $J(\mathbf{q})$ o Jacobiano avaliada na configuração atual. Cada coluna de $J$ indica como a velocidade de uma junta influencia diretamente o movimento do punho. O Jacobiano pode ser escrita como:
 \[
 J =
 \begin{bmatrix}
@@ -196,56 +182,100 @@ Enquanto para juntas prismáticas vale:
 
 \[
 J_v^i = z_{i-1}, \qquad 
-J_\omega^i = 0.
+J_\omega^i = 0,
 \]
 
-\subsubsection{Manipuladores de 6 Graus de Liberdade}
-Manipuladores com seis juntas permitem controlar completamente a posição e a orientação do end-effector em um espaço tridimensional, resultando em um vetor de velocidades cartesiano de seis dimensões:
+Em que $z_{i-1}$ é o vetor que define o eixo da junta i-1, $p_{e}$ é a posição da junta i e $p_{i-1}$ é a posição do eixo i-1.
+
+Para a encontrar a velocidade das juntas dada uma velocidade no espaço cartesiano, é preciso utilizar a relação inversa:
 
 \[
-\dot{x} =
-\begin{bmatrix}
-\dot{p} \\
-\omega
-\end{bmatrix},
+\dot{\mathbf{q}} = J^-(\mathbf{q}) \dot{\mathbf{x}}
 \]
 
-Nesse caso, a Jacobiana tem dimensão $6 \times 6$ e, quando longe de singularidades, é invertível. Isso permite que o robô explore totalmente seu espaço de trabalho tanto em termos de movimento translacional quanto rotacional. Para robôs industriais com todas as juntas de revolução, cada coluna da Jacobiana segue exatamente o padrão apresentado anteriormente. Devido à completude de graus de liberdade, a cinemática inversa diferencial é bem definida e o manipulador pode rastrear trajetórias arbitrárias de pose (posição + orientação), desde que estas estejam dentro do espaço alcançável do robô.
+Contudo, o Jacobiano nem sempre será invertível e pode não ser uma matriz quadrada.
+
+\subsubsection{Manipuladores de 6 Juntas de Revolução}
+Manipuladores com seis juntas podem alcançar posições e a orientações genéricas dentro do espaço de trabalho. Descrevendo a orientação em termos dos ângulos de euler temos uma relação de um espaço cartesiano com 6 dimensões, 3 para posição (x, y, z) e 3 para orientação ($\alpha, \beta, \gamma$), e um espaço das juntas com 6 graus de liberdade.
+
+Para esse tipo de manipulador temos:
+\[
+\mathbf{x} = 
+\begin{bmatrix}
+x \\ y \\ z \\
+\alpha \\ \beta \\ \gamma
+\end{bmatrix}
+com \:
+\dot{\mathbf{x}} = 
+\begin{bmatrix}
+\dot{x} \\ \dot{y} \\ \dot{z} \\
+\dot{\alpha} \\ \dot{\beta} \\ \dot{\gamma}
+\end{bmatrix}
+e \: 
+\mathbf{q} = 
+\begin{bmatrix}
+\theta_1 \\ \theta_2 \\ \theta_3 \\
+\theta_4 \\ \theta_5 \\ \theta_6
+\end{bmatrix}
+ com \: 
+\dot{\mathbf{q}} = 
+\begin{bmatrix}
+\dot{\theta_1} \\ \dot{\theta_2} \\ \dot{\theta_3} \\
+\dot{\theta_4} \\ \dot{\theta_5} \\ \dot{\theta_6}
+\end{bmatrix}
+\]
+
+Nesse caso, o Jacobiano é uma matriz quadrada com dimensões $6 \times 6$ e, quando longe de singularidades, é invertível.
 
 \subsubsection{Manipuladores com 5 Juntas de Revolução}
 
-Manipuladores com cinco juntas de revolução apresentam limitações estruturais, pois não possuem os seis graus necessários para especificar independentemente posição e orientação. Isso se reflete na Jacobiana:
+Para manipuladores com menos de  graus de liberdade, a matriz jacobiana não é quadrada e portanto não é possível calcular diretamente a sua inversa.
 
 \[
 J(\mathbf{q}) \in \mathbb{R}^{6 \times 5},
 \]
 
-Nesse caso, ela mapeia velocidades articulares para um espaço cartesiano de dimensão maior do que o número de graus de liberdade disponíveis. As colunas continuam sendo dadas por:
-
-\[
-J_v^i = z_i \times (p_e - p_i), \qquad 
-J_\omega^i = z_i,
-\]
-
-Mas a matriz nunca pode alcançar posto igual a seis. Consequentemente, o manipulador só consegue gerar movimentos em cinco direções independentes, restringindo combinações de posição e orientação possíveis. A cinemática inversa diferencial só consegue satisfazer as componentes realizáveis de $\dot{\mathbf{x}}$, e as regiões de singularidade tendem a ser maiores devido à falta de mobilidade adicional.
-
-A pseudoinversa surge como ferramenta necessária, já que $J$ não é quadrada nem invertível. Assim, a solução de mínimos quadrados para a velocidade das articulações é dada por:
+A pseudoinversa pode ser utilizada como uma aproximação para a inversa do Jacobiano e nos permite relacionar a velocidade no espaço cartesiano com a velocidade no espaço das juntas.
 
 \[
 \dot{\mathbf{q}} = J^\dagger \, \dot{\mathbf{x}}.
 \]
 
-A pseudoinversa projeta $\dot{\mathbf{x}}$ no subespaço alcançável pelas colunas de $J$, descartando automaticamente componentes impossíveis de serem realizadas fisicamente.
+\subsubsection{Cinemática Diferencial}
 
-\subsubsection{Uso da Jacobiana no Controle}
+A cinemática diferencial é abordagem interessante para a resolução do problema da cinemática inversa para manipuladores em que a solução analítica não é possível ou não é conveniente. Dado que a relação entre velocidade no espaço cartesiano e velocidade das juntas é conhecida, por meio da integração numérica é possível determinar a solução da cinemática inversa por meio da integração.
+Podemos aproximar a posição da junta no passo k+1 de integração por meio da equação:
+\[
+\mathbf{q}_{k+1} = \mathbf{q}_k + \mathbf{\dot{q}} \, dt
+\].
+Substituindo a relação inversa do Jacobiano é possível obter:
+\[
+\mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, \mathbf{\dot{v}}_k \, dt
+\].
+
+Dado um valor inicial para a posição das juntas, um intervalo de tempo de integração arbitrário e uma velocidade no espaço cartesiano em direção a posição desejada, é possível obter uma nova posição das juntas que é mais próxima do alvo. A cada iteração é calculada a cinemática direta para que se possa verificar se o objetivo final foi atingido. Ao escolher a velocidade no espaço cartesiano e o valor de tempo de integração é importante notar que para valores muito altos a solução pode não convergir e para valores muito pequenos a solução pode levar um grande número de iteraçãoes.  
+
+\subsubsection{Controle Cinemático Baseado no Jacobiano}
+
+% TODO: Corrigir essa seção
+Seguindo uma ideia similar ao que foi desenvolvido na cinemática diferencial, é possível realizar um controle de posição das juntas utilizando o Jacobiano.
+Dado um erro cartesiano atual
+\[
+\mathbf{e} = \mathbf{x_d} - \mathbf{x}(\mathbf{q}),
+\]
+podemos corrigi-lo iterativamente utilizando a atualização
+\[
+\mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, \mathbf{e} \ dt,
+\]
+onde $J^\dagger$ é a pseudoinversa da Jacobiana. Esse método, conhecido como cinemática inversa diferencial, converge para uma solução desde que a pose desejada esteja próxima do espaço alcançável e que o sistema não esteja próximo de uma singularidade. 
+
+Apesar de eficaz, o método numérico tem limitações. Próximo a singularidades, a Jacobiana se torna mal condicionada, levando a movimentos exagerados ou instáveis nas juntas. Além disso, o método numérico necessita de uma boa inicialização, caso contrário pode convergir para uma solução indesejada ou ficar preso em mínimos locais.
 
 A Jacobiana desempenha papel essencial em diferentes estratégias de controle. Na conversão de forças para torques, utiliza-se a relação
 \[
 \boldsymbol{\tau} = J^T F,
 \]
 permitindo controlar a interação com o ambiente. Singularidades são identificadas quando $\det(JJ^T) \approx 0$, indicando perda de mobilidade e possível amplificação indesejada das velocidades articulares. Nessas regiões, pequenas velocidades do end-effector podem exigir grandes velocidades de junta, prejudicando precisão e estabilidade, motivo pelo qual estratégias de amortecimento e regularização são frequentemente aplicadas.
-
-\subsubsection{Controle Cinemático Baseado em Jacobiana}
 
 O controle cinemático utiliza diretamente a relação diferencial para gerar velocidades articulares que levam o end-effector à pose desejada. A forma típica emprega a pseudoinversa:
 
