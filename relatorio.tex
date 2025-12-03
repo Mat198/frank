@@ -300,17 +300,13 @@ Onde $T(\theta_1, \theta_2, ..., \theta_n)$ é a pose final do end-effector, $e^
 
 \subsection{Aprendizagem de Máquina}
 
-A aprendizagem de máquina desempenha um papel central no avanço da manipulação robótica, especialmente em ambientes complexos, dinâmicos e não estruturados. Como manipuladores precisam lidar com incertezas relacionadas a percepção, contatos, propriedades físicas variáveis e objetos desconhecidos, técnicas baseadas em dados fornecem meios para complementar ou substituir modelos analíticos tradicionais quando estes se tornam insuficientes.
+A aprendizagem de máquina tem sido bastante usada na manipulação robótica moderna, complementando e, em muitos casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos analíticos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos e propriedades físicas difíceis de modelar. 
 
-No domínio da percepção, métodos supervisionados e auto-supervisionados são amplamente empregados para identificar, segmentar e caracterizar objetos presentes na cena. Redes neurais profundas permitem extrair representações ricas e invariantes a iluminação, textura e oclusões, oferecendo estimativas robustas de forma, pose e regiões manipuláveis. Estratégias como uso de grandes bases de dados, dados sintéticos, anotações automatizadas e \textit{transfer learning} tornam viável treinar modelos capazes de generalizar para novos cenários. Além disso, técnicas modernas extraem keypoints semânticos e correspondências densas, possibilitando mapear a estrutura dos objetos e permitir que manipuladores adaptem estratégias de \textit{picking} e interação mesmo com variações significativas.
-
-A aprendizagem de máquina também aparece na construção de controle. Métodos de \textit{Reinforcement Learning} possibilitam que sistemas robóticos aprendam comportamentos de manipulação diretamente por meio de interação, otimizando ações com base em recompensas e erros acumulados. Esse processo permite modelar fenômenos difíceis de representar matematicamente, como atrito complexo, deformações e contatos múltiplos. Abordagens baseadas em gradiente de política, métodos de valor e técnicas híbridas que combinam modelos físicos com módulos aprendidos surgem como alternativas promissoras para alcançar controle adaptativo e robusto. Embora ainda enfrentem desafios de eficiência e estabilidade, essas técnicas ampliam o conjunto de habilidades possíveis para manipuladores em ambientes reais.
-
-De maneira geral, a fusão entre modelos clássicos e componentes aprendidos constitui uma estratégia eficaz para aumentar a autonomia e a flexibilidade dos robôs. A aprendizagem de máquina fornece ferramentas para perceber melhor, adaptar-se a variações e aprender estratégias que seriam inviáveis com abordagens puramente analíticas. Assim, ela se torna um elemento fundamental na construção de sistemas de manipulação capazes de atuar de forma inteligente, segura e generalizável.
+Redes neurais profundas podem fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos e métodos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que não podem não ser bem modelados pelos métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia, adaptabilidade e generalização dos manipuladores.
 
 \section{Materiais}
 
-Para este trabalho foi utilizado o Robotics Toolbox for Python, desenvolvido por Peter Corke, como ferramenta principal de simulação do manipulador. Esse toolbox fornece recursos completos para modelagem de robôs seriais, permitindo criar ou importar modelos via parâmetros DH, calcular cinemática direta e inversa, gerar trajetórias articulares e visualizar os movimentos em ambiente virtual. A integração com o ecossistema do Python facilita a execução de análises, experimentos e validações de controle, possibilitando testar estratégias de manipulação sem a necessidade de hardware físico.
+Para este trabalho foi utilizado o Robotics Toolbox for Python, desenvolvido por Peter Corke, como ferramenta principal de simulação do manipulador. Esse toolbox fornece recursos para modelagem de robôs, permitindo criar modelos via parâmetros DH, calcular cinemática direta e inversa, gerar trajetórias e visualizar os movimentos em ambiente virtual.
 
 \section{Metodologia e Resultados}
 
@@ -334,12 +330,11 @@ Para este trabalho, foi proposto um modelo de robô manipulador composto por cin
   \footnotesize{Fonte: elaboração dos autores.}
 \end{figure}
 
-A metodologia adotada incluiu a determinação dos parâmetros de Denavit–Hartenberg do manipulador por meio da definição dos sistemas de coordenadas e identificação das medidas necessárias, seguida da implementação do modelo completo do robô na Robotics Toolbox de Peter Corke. Com o modelo definido, foram obtidos os cálculos da Jacobiana e aplicada a cinemática inversa diferencial para relacionar velocidades articulares e do \textit{end-effector}, além da realização da cinemática direta por Screw Theory como abordagem complementar. Por fim, desenvolveu-se uma simulação de Pick and Place na toolbox, permitindo verificar a coerência entre a modelagem teórica e o desempenho do robô em tarefas de manipulação.
-
+A metodologia adotada incluiu a determinação dos parâmetros de Denavit–Hartenberg do manipulador por meio da definição dos sistemas de coordenadas e identificação das medidas necessárias, seguida da implementação do modelo completo do robô na Robotics Toolbox de Peter Corke. Com o modelo definido, foram obtidos os cálculos da Jacobiana e aplicada a cinemática inversa diferencial para relacionar velocidades articulares e do \textit{end-effector}, além da realização da cinemática direta por Screw Theory como abordagem complementar. Também, foi desenvolvido uma simulação de Pick and Place na toolbox, permitindo verificar a coerência entre a modelagem teórica e o desempenho do robô em tarefas de manipulação. Por fim, foi feito um script para gerar dados de trajetória, utilizando a biblioteca, para dada uma pose alvo do end-effector. Esses dados poderão ser utilizados futuramente no treinamento de modelos de aprendizagem de máquina.
 
 \subsection{Parâmetros de Denavit-Hartenberg}
 
-Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg correspondentes a cada elo e junta do robô. Para isso, adotou-se o procedimento clássico de definição dos sistemas de coordenadas, identificação dos eixos das juntas e medição das distâncias e ângulos necessários. A partir dessas informações, foi construída a tabela de parâmetros de Denavit–Hartenberg (Tabela \ref{tabela}), que serviu como base para a modelagem cinemática do manipulador.
+Primeiramente, foram determinados os parâmetros de Denavit–Hartenberg correspondentes a cada elo e junta do robô. Para isso, adotou-se o procedimento de definição dos sistemas de coordenadas, identificação dos eixos das juntas e medição das distâncias e ângulos necessários. A partir dessas informações, foi construída a tabela de parâmetros de Denavit–Hartenberg (Tabela \ref{tabela}), que serviu como base para a modelagem do manipulador.
 
 \begin{table}[h!]
     \caption{Parâmetros de Denavit-Hartenberg para o robô FRANK.} \label{tabela} 
@@ -392,9 +387,9 @@ O trecho de código do Código \ref{definicao_frank} cria cada elo do robô FRAN
 
 \subsection{Cálculos da Jacobiana}
 
-Com o modelo estabelecido, foram desenvolvidos os cálculos da Jacobiana do robô FRANK. A matriz Jacobiana foi posteriormente utilizada na descrição da cinemática inversa diferencial, permitindo relacionar velocidades do end-effector com velocidades das juntas.
+Com o modelo estabelecido, foram desenvolvidos os cálculos da Jacobiana do robô FRANK. A matriz Jacobiana foi posteriormente utilizada nos cálculo da cinemática inversa diferencial, permitindo relacionar velocidades do end-effector com velocidades das juntas.
 
-O cálculo da Jacobiana no Código \ref{jacob_frank} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros simbólicos das juntas. 
+O cálculo da Jacobiana no Código \ref{jacob_frank} é realizado construindo-se primeiramente as matrizes de transformação homogênea de cada elo utilizando a biblioteca \textit{SymPy}, definidas a partir dos parâmetros das juntas.
 
 Em seguida, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições intermediárias $O_1, O_2, O_3, O_4, O_5$ de cada junta no espaço. Para cada elo, extrai-se também o vetor de direção do eixo da junta ($Z_1$ a $Z_5$), obtido a partir das submatrizes de rotação acumuladas. 
 
@@ -475,7 +470,7 @@ J = simplify(Matrix([[JV1, JV2, JV3, JV4, JV5], [JW1, JW2, JW3, JW4, JW5]]))
 J.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
 \end{lstlisting}
 
-A matriz Jacobiana obtida a partir do desenvolvimento simbólico das transformações homogêneas e dos vetores de posição e orientação das juntas resulta na seguinte expressão. Essa matriz relaciona diretamente as velocidades articulares com as velocidades linear e angular do efetuador final, refletindo a estrutura cinemática do manipulador de cinco graus de liberdade.
+A matriz Jacobiana obtida a partir do desenvolvimento simbólico das transformações homogêneas e dos vetores de posição e orientação das juntas resulta na seguinte expressão:
 
 \begin{align*}
 J_{1,1} &= \left(-a_{1} + a_{2}S_{2} + a_{3}S_{23} + d_{5}S_{234}\right) S_{1} \\
@@ -543,9 +538,14 @@ Essa notação foi usada para tornar equações de cinemática mais legíveis, e
 
 \subsection{Cinemática Inversa Diferencial}
 
-A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e articulares, mediada pela matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta os valores articulares passo a passo a partir do erro entre a pose atual e a pose final.
+A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e das juntas, através da matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta os valores articulares passo a passo a partir do erro entre a pose atual e a pose final.
 
-No Código \ref{dif_ik}, essa abordagem é implementada calculando-se inicialmente a pose do robô e definindo velocidades proporcionais ao erro de posição. A cada iteração, a função \texttt{jacobian\_ik} obtém a Jacobiana na configuração corrente, monta o vetor de velocidades cartesianas e utiliza sua pseudoinversa para determinar as velocidades articulares correspondentes. Em seguida, essas velocidades são integradas para atualizar as juntas. Após cada atualização, recalcula-se o erro em relação à pose desejada e verifica-se a convergência, repetindo o processo até que a posição e a orientação finais sejam atingidas ou que o número máximo de iterações seja alcançado.
+O Código \ref{dif_ik} implementa a cinemática inversa diferencial ao iterativamente ajustar as juntas de acordo com o erro entre a pose atual e a pose desejada do end-effector. O procedimento inicia com o cálculo da posição e orientação associadas à configuração inicial, a partir da qual são definidas velocidades lineares proporcionais ao erro de posição. Essas velocidades servem como referência para o processo iterativo.
+
+Em cada iteração, a função \texttt{jacobian\_ik} é chamada para obter a Jacobiana na configuração corrente e montar o vetor de velocidades cartesianas, combinando componentes lineares e angulares. Em seguida, calcula-se a pseudoinversa da Jacobiana para determinar as velocidades articulares que melhor realizam o movimento desejado no espaço cartesiano. As juntas são então atualizadas pela integração dessas velocidades ao longo de um pequeno intervalo de tempo.
+
+Após cada atualização, o código recalcula a pose do robô e verifica se a posição e a orientação estão suficientemente próximas dos valores desejados. Caso o erro permaneça acima do limite admissível, uma nova iteração é realizada com o erro de posição atualizado, refinando progressivamente o movimento. O processo continua até que se atinja a convergência ou que o número máximo de iterações seja alcançado, resultando na configuração de juntas que melhor aproxima a pose final especificada.
+
 
 \begin{lstlisting}[caption={Cinemática inversa diferencial}, label={dif_ik}]
 import numpy as np
@@ -587,21 +587,25 @@ def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
     return nq
 \end{lstlisting}
 
+% TODO: Acho que vale a pena falar que essa solução, apesar de funcionar, não converge muito bem por conta de singularidades, etc.
+
 \subsection{Cinemática com Screw Theory}
 
-Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. Essa análise permitiu comparar métodos e reforçar a compreensão estrutural do manipulador.
+Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. 
 
 \subsection{Algoritmo de Pick and Place}
 
-Foi desenvolvido um experimento de Pick and Place utilizando a Robotics Toolbox de Peter Corke, no qual o modelo do FRANK foi empregado para executar trajetórias e manipular objetos dentro do ambiente simulado. Essa etapa permitiu avaliar a coerência entre os modelos teóricos e o comportamento do robô em tarefas de manipulação.
+Também, foi desenvolvido um experimento de Pick and Place utilizando a Robotics Toolbox de Peter Corke, no qual o modelo do FRANK foi empregado para executar trajetórias e manipular objetos dentro do ambiente simulado.
 
 \subsection{Coleta de Dados para Treinamento}
 
-O uso de grandes bases de dados tem se tornado essencial no treinamento de redes neurais aplicadas à robótica. Modelos baseados em aprendizagem supervisionada dependem de conjuntos de dados bem estruturados que relacionem estados das juntas, poses desejadas e movimentos resultantes, permitindo que a rede aprenda padrões que seriam difíceis de modelar analiticamente. 
+Neste trabalho, também foi gerado um conjunto de dados contendo poses desejadas e suas respectivas soluções de cinemática inversa com o objetivo de futuramente treinar uma rede neural capaz de imitar o solver de cinemática inversa da \textit{Robotics Toolbox} de Peter Corke. 
 
-Neste trabalho, gera-se um conjunto de dados contendo poses desejadas e suas respectivas soluções de cinemática inversa com o objetivo de treinar uma rede neural capaz de imitar o resolvedor da \textit{Robotics Toolbox} de Peter Corke. O Código \ref{data_generator} implementa esse processo ao amostrar configurações articulares aleatórias, calcular suas poses por cinemática direta e empregar o método \texttt{ikine\_LM} para obter a solução de cinemática inversa. Quando o resolvedor converge, registram-se em arquivo a pose alvo e as configurações inicial e final, formando exemplos supervisionados que permitirão ao modelo aprender o comportamento do solver tradicional.
+O Código \ref{data_generator} implementa um procedimento para gerar amostras destinadas, futuramente, ao treinamento de um modelo de aprendizagem de máquina. Com o robô definido, o código entra em um laço de iterações, dentro do qual uma configuração aleatória de juntas é amostrada a partir dos limites do manipulador. Essa configuração é utilizada para calcular, via cinemática direta, a pose correspondente do end-effector, que passa a ser a pose desejada do problema de cinemática inversa.
 
-O Código \ref{data_generator} também define o manipulador FRANK e automatiza a geração dessas amostras. A cada iteração, uma configuração aleatória de juntas é utilizada para calcular uma pose do end-effector, que passa a ser o objetivo da cinemática inversa. A partir de uma configuração inicial igualmente aleatória, o método \texttt{ikine\_LM} busca recuperar os valores das juntas compatíveis com essa pose. Quando a solução é encontrada, o código gera uma trajetória suave entre \textit{q\_initial} e \textit{q\_solution} e armazena as informações em um arquivo CSV. Repetindo esse procedimento diversas vezes, obtém-se uma base de dados estruturada que servirá de referência para o treinamento da rede neural.
+Em seguida, o script gera uma configuração inicial também aleatória, que serve como estimativa para o método numérico \texttt{ikine\_LM} da biblioteca. A partir da pose desejada, uma transformação homogênea é construida usando as classes \texttt{SE3}, combinando posição e orientação. O solver é então executado e, quando converge, retorna uma configuração de juntas compatível com a pose desejada.
+
+Quando uma solução válida é encontrada, o código gera uma trajetória interpolada entre \textit{q\_initial} e \textit{q\_solution} utilizando \texttt{jtraj}. Em seguida, a função \texttt{save\_to\_csv} armazena em arquivo a pose desejada do end-effector, a configuração inicial, a configuração final do solver e a trajetória gerada. A repetição desse processo ao longo das iterações produz um conjunto de dados que documenta o comportamento do solver de cinemática inversa, formando a base de dados necessária para o posterior treinamento do modelo de aprendizagem de máquina.
 
 
 \begin{lstlisting}[caption={Script para Coleta de Dados}, label={data_generator}]
@@ -712,9 +716,9 @@ for i in range(num_iterations):
 
 \section{Conclusão}
 
-Os trabalhos realizados permitiram modelar e analisar de forma completa a cinemática do manipulador FRANK, desde a definição dos parâmetros de Denavit--Hartenberg até a implementação de métodos numéricos de cinemática inversa baseados na Jacobiana. As simulações confirmaram a consistência dos modelos e a capacidade do robô em executar trajetórias e tarefas básicas. Além disso, a geração automática de dados mostrou-se eficaz para apoiar o treinamento de uma rede neural destinada a aproximar o comportamento do solver de cinemática inversa da \textit{Robotics Toolbox}. Em conjunto, esses resultados fornecem uma base sólida para estudos futuros em controle e aprendizagem de máquina aplicada à robótica manipuladora.
+O trabalho realizado permitiu modelar e analisar a cinemática do manipulador FRANK, desde a definição dos parâmetros de Denavit-Hartenberg até a implementação de métodos numéricos de cinemática inversa baseados na Jacobiana. As simulações confirmaram a capacidade do robô em executar trajetórias e tarefas básicas. Além disso, a geração automática de dados mostrou-se eficaz para gerar dados de forma rápida para apoiar o treinamento de uma rede neural destinada a aproximar o comportamento do solver de cinemática inversa da \textit{Robotics Toolbox}.
 
-Adicionalmente, foi implementado um modelo com camadas totalmente conectadas para realizar a regressão das trajetórias geradas pelo script de coleta de dados, buscando aproximar o comportamento do solver de cinemática inversa. Entretanto, o modelo não apresentou convergência satisfatória: as trajetórias previstas não alcançavam a pose desejada do end-effector, indicando limitação da arquitetura adotada para essa tarefa. Assim, trabalhos futuros incluem a investigação de modelos mais expressivos, como arquiteturas baseadas em \textit{Transformers} ou métodos generativos, especialmente modelos de difusão, que podem oferecer maior capacidade de generalização e precisão na estimação das configurações das juntas.
+Adicionalmente, foi empregado um modelo de rede neural artificial com camadas totalmente conectadas para realizar a regressão das trajetórias geradas pelo script de coleta de dados, buscando aproximar o comportamento do solver de cinemática inversa. Entretanto, o modelo não apresentou convergência satisfatória: as trajetórias previstas não alcançavam a pose desejada do end-effector, indicando limitação da arquitetura adotada para essa tarefa. Assim, trabalhos futuros incluem a investigação de outros modelos, como arquiteturas baseadas em \textit{Transformers} e métodos generativos, especialmente modelos de difusão, que podem oferecer maior capacidade de generalização e precisão na estimação das configurações das juntas.
 
 
 \end{document}
