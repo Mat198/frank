@@ -158,7 +158,7 @@ A cinemática inversa aborda o problema oposto ao da cinemática direta: dada um
 
 A cinemática inversa, ao contrário da cinemática direta, pode apresentar múltiplas soluções, nenhuma solução ou soluções não triviais, especialmente em robôs com redundâncias ou com restrições geométricas. Todos os sistemas com até 6 graus de liberdade compostos por juntas rotacionais ou prismáticas em uma única cadeia em série são solucionáveis. 
 
-Para manipuladores com até 4 graus de liberdade ou estrutura geométrica particular é possível derivar soluções analíticas fechadas. Se 3 eixos consecutivos se cruzam em um ponto, ou são paralelos, é possível aplicar a solução de Pieper para obter uma solução fechada para manipuladores de 6 graus de liberdade. Porém, para manipuladores com mais de 6 graus de liberdade vão existir múltiplas soluções e soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear e métodos numéricos são utilizados.
+Para manipuladores com até 4 graus de liberdade ou estrutura geométrica particular é possível derivar soluções analíticas fechadas. Se 3 eixos consecutivos se cruzam em um ponto, ou são paralelos, é possível aplicar a solução de Pieper para obter uma solução fechada para manipuladores de 6 graus de liberdade. Porém, para manipuladores com mais de 6 graus de liberdade vão existir múltiplas soluções e soluções analíticas tornam-se impraticáveis ou inexistentes devido ao alto acoplamento não linear. Nesses casos, métodos numéricos são utilizados.
 
 \subsection{Jacobiano e Cinemática Diferencial}
 
@@ -236,7 +236,7 @@ Nesse caso, o Jacobiano é uma matriz quadrada com dimensões $6 \times 6$ e, qu
 
 \subsubsection{Manipuladores com 5 Juntas de Revolução}
 
-Para manipuladores com menos de  graus de liberdade, a matriz jacobiana não é quadrada e portanto não é possível calcular diretamente a sua inversa.
+Para manipuladores com 5 graus de liberdade, a matriz jacobiana não é quadrada e portanto não é possível calcular diretamente a sua inversa.
 
 \[
 J(\mathbf{q}) \in \mathbb{R}^{6 \times 5},
@@ -250,11 +250,11 @@ A pseudoinversa pode ser utilizada como uma aproximação para a inversa do Jaco
 
 \subsubsection{Cinemática Diferencial}
 
-A cinemática diferencial é abordagem interessante para a resolução do problema da cinemática inversa para manipuladores em que a solução analítica não é possível ou não é conveniente. Dado que a relação entre velocidade no espaço cartesiano e velocidade das juntas é conhecida, por meio da integração numérica é possível determinar a solução da cinemática inversa por meio da integração.
+A cinemática diferencial é abordagem interessante para a resolução do problema da cinemática inversa para manipuladores em que a solução analítica não é possível ou não é conveniente. Dado que a relação entre velocidade no espaço cartesiano e velocidade das juntas é conhecida, é possível determinar a solução da cinemática inversa por meio da integração numérica.
 Podemos aproximar a posição da junta no passo k+1 de integração por meio da equação:
 \[
-\mathbf{q}_{k+1} = \mathbf{q}_k + \mathbf{\dot{q}} \, dt
-\].
+\mathbf{q}_{k+1} = \mathbf{q}_k + \mathbf{\dot{q}} \, dt.
+\]
 Substituindo a relação inversa do Jacobiano é possível obter:
 \[
 \mathbf{q}_{k+1} = \mathbf{q}_k + J^\dagger(\mathbf{q}_k) \, \mathbf{\dot{v}}_k \, dt
@@ -303,7 +303,7 @@ onde cada termo $e^{[S_i]\theta_i}$ representa o movimento helicoidal da junta $
 
 Atualmente, métodos de aprendizagem de máquina tem sido bastante usados em manipulação robótica, complementando e, em alguns casos, até superando métodos clássicos em cenários complexos e pouco estruturados. Enquanto abordagens tradicionais dependem de modelos precisos, técnicas baseadas em dados permitem lidar melhor com incertezas de percepção, contatos, ruídos e propriedades físicas difíceis de modelar. 
 
-Redes neurais profundas podem, por exemplo, fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos. Por outro lado, algoritmos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que não podem ser difíceis de serem modelados pelos métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia e a adaptabilidade dos manipuladores.
+Redes neurais profundas podem, por exemplo, fornecer estimativas de forma e pose, facilitando a identificação e caracterização de objetos. Por outro lado, algoritmos de aprendizagem por reforço possibilitam que robôs adquiram habilidades diretamente por interação, aprendendo a lidar com fenômenos que podem ser difíceis de modelar por métodos tradicionais. Embora ainda existam desafios de eficiência e estabilidade, a combinação de princípios clássicos com componentes aprendidos tem se mostrado uma boa estratégia para aumentar a autonomia e a adaptabilidade dos manipuladores.
 
 \section{Materiais}
 
@@ -445,7 +445,7 @@ T05 = simplify(T05)
 
 \end{lstlisting}
 
-Então, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar as posições da origem de cada sistema de coordenadas de cada junta no espaço, $O_1, O_2, O_3, O_4, O_5$.
+Então, essas transformações são multiplicadas para obter a pose final do end-effector e também para determinar a posição da origem dos sistema de coordenadas de cada junta no espaço, $O_1, O_2, O_3, O_4, O_5$, em relação ao sistema de coordenadas da base.
 
 \begin{lstlisting}[caption={Cálculo do centro das juntas.}, label={jacob_frank2}]
 Origin = Matrix ([[0], [0], [0], [1]])
@@ -481,7 +481,7 @@ A figura \ref{origins} mostra a origem dos eixos em sequencia da esqueda para a 
   \footnotesize{Fonte: elaboração dos autores.}
 \end{figure}
 
-Para cada elo, extrai-se também o vetor de direção do eixo da junta de $Z_1$ até $Z_5$, obtidos aplicando as matrizes de rotação nos eixos subsequentes. 
+Para cada elo, extrai-se também o vetor de direção do eixo da junta de $Z_1$ até $Z_5$, obtidos aplicando as matrizes de rotação nos eixos subsequentes. Seguindo a notação de Denavit Hartenberg, todos os eixos são posicionados na direção Z de seus respectivos sistemas de coordenadas.
 
 \begin{lstlisting}[caption={Cálculo do eixo das juntas.}, label={jacob_frank3}]
 ZAxis = Matrix ([[0], [0], [1]])
@@ -525,6 +525,9 @@ JW5 = Z5
 J = simplify(Matrix([
     [JV1, JV2, JV3, JV4, JV5], 
     [JW1, JW2, JW3, JW4, JW5]]))
+
+# Calculando a matriz Jacobiana para comparar com a Robotics Toolbox
+J.subs({t1: np.pi/6, t2: np.pi/6, t3: np.pi/6, t4: np.pi/6, t5: np.pi/6, d1: 0.155, a1: 0.287, a2: 0.8, a3: 0.8, d5: 0.317})
 \end{lstlisting}
 
 A matriz Jacobiana obtida a partir do desenvolvimento simbólico das transformações homogêneas e dos vetores de posição e orientação das juntas resulta na seguinte expressão:
@@ -535,8 +538,7 @@ J_{1,2} &= -\left(a_{2}C_{2} + a_{3}C_{23} + d_{5}C_{234}\right) C_{1} \\
 J_{1,3} &= -\left(a_{3}C_{23} + d_{5}C_{234}\right) C_{1} \\
 J_{1,4} &= - d_{5} C_{1} C_{234} \\
 J_{1,5} &= 0 \\
-\end{align*}
-\begin{align*}
+\\
 J_{2,1} &= \left(a_{1} - a_{2}S_{2} - a_{3}S_{23} - d_{5}S_{234}\right) C_{1} \\
 J_{2,2} &= -\left(a_{2}C_{2} + a_{3}C_{23} + d_{5}C_{234}\right) S_{1} \\
 J_{2,3} &= -\left(a_{3}C_{23} + d_{5}C_{234}\right) S_{1} \\
@@ -554,7 +556,8 @@ J_{4,2} &= S_{1} \\
 J_{4,3} &= S_{1} \\
 J_{4,4} &= S_{1} \\
 J_{4,5} &= - S_{234} C_{1} \\
-\\
+\end{align*}
+\begin{align*}
 J_{5,1} &= 0 \\
 J_{5,2} &= - C_{1} \\
 J_{5,3} &= - C_{1} \\
@@ -595,7 +598,7 @@ Essa notação foi usada para tornar equações de cinemática mais legíveis, e
 
 \subsection{Cinemática Inversa Diferencial}
 
-A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e das juntas, através da matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta os valores articulares passo a passo a partir do erro entre a pose atual e a pose final.
+A cinemática inversa diferencial utiliza a relação entre as velocidades cartesianas e das juntas, através da matriz Jacobiana, para conduzir o manipulador até uma pose desejada de forma incremental. Em vez de resolver diretamente as posições das juntas, o método ajusta a posição das juntas passo a passo a partir do erro entre a pose atual e a pose final.
 
 O Código \ref{diff_ik} implementa a cinemática inversa diferencial ao iterativamente ajustar as juntas de acordo com o erro entre a pose atual e a pose desejada do end-effector. O procedimento inicia com o cálculo da posição e orientação associadas à configuração inicial, a partir da qual são definidas velocidades lineares proporcionais ao erro de posição. Essas velocidades servem como referência para o processo iterativo.
 
@@ -644,7 +647,7 @@ def jacobian_ik(robot: rtb.DHRobot, q, lin_vel, ang_vel, dt):
 
 Para posições próximas de singularidades a solução não apresenta uma boa convergência e para um pequeno deslocamento linear um grande deslocamento das juntas é produzido. Técnicas de otimização podem ser aplicadas para solucionar esse problema como adicionar restrições de velocidade, posição e aceleração. Na implementação proposta no Código \ref{diff_ik} o termo da velocidade angular foi omitido para melhorar a convergência do método.
 
-Para uma movimentaçaõ da posição (1.6527 -0.0000 0.4037) para a posição (1.2, 0.4, 0.5) a cinemática inversa converge após 27 iterações como mostrado nos logs abaixo:
+Para uma movimentação da posição (1.6527, 0, 0.4037) para a posição (1.2, 0.4, 0.5) a cinemática inversa converge após 27 iterações como mostrado nos logs abaixo:
 
 \begin{lstlisting}[label={dif_ik}]
 Initial position: [1.6527 -0.0000 0.4037]
@@ -686,7 +689,7 @@ Final IK position is:  [0.3209 -0.2358 -1.4807 -1.4252 0.3209]
 
 \subsection{Cinemática com Screw Theory}
 
-Além disso, foi realizada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. Para isso, primeiramente o robô foi movido para a posição em que todas as juntas são 0 conforme a figura \ref{zero_position}. Nessa posição foram definidos os sistemas de coordenadas da base e do ferramenta além dos eixos de screw $s_n$.
+Foi calculada a cinemática direta utilizando a Screw Theory, proporcionando uma abordagem alternativa à formulação clássica baseada em DH. Para isso, primeiramente o robô foi movido para a posição em que todas as juntas são 0 conforme a figura \ref{zero_position}. Nessa posição foram definidos os sistemas de coordenadas da base e da ferramenta além dos eixos de screw $s_n$.
 
 \begin{figure}[H]
 \centering
@@ -749,7 +752,7 @@ s_{\omega 5} =
 \end{bmatrix}. \
 \]
 
-A parte linear do screw pode ser encontrada usando a equação $S_{vn} = S_{\omega n} \times a_n$: 
+A parte linear do screw pode ser encontrada usando a equação $S_{vn} = -S_{\omega n} \times a_n$: 
 
 \[
 s_{v1} =
@@ -772,7 +775,7 @@ s_{v5} =
 O eixo de screw é obtido concatenando a porção angular e linear:
 
 \[
-s_{vn} =
+s_{n} =
 \begin{bmatrix} s_{\omega n} \\  s_{vn} \\
 \end{bmatrix}. \
 \]
@@ -888,8 +891,6 @@ from ik import differential_ik
 float_formatter = "{:.4f}".format
 np.set_printoptions(formatter={'float_kind': float_formatter})
 
-# Define DH parameters for a simple 2-link manipulator
-# [a, alpha, d, theta]
 L1 = rtb.RevoluteDH(a=0.287, alpha=np.pi/2, d=0.155, offset=0)
 L2 = rtb.RevoluteDH(a=0.8, alpha=0, d=0, offset=np.pi/2)
 L3 = rtb.RevoluteDH(a=0.8, alpha=0, d=0.0, offset=0)
